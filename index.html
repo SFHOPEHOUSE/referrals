@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hope House Referral — The Way Out SF</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root{
+    --red:#C8102E;
+    --red-dark:#A00D24;
+    --blue:#1B3A5C;
+    --blue-light:#24507A;
+    --white:#FFFFFF;
+    --bg:#F5F5F5;
+    --text:#1A1A1A;
+    --gray:#6B7280;
+    --border:#D1D5DB;
+    --radius:10px;
+    --shadow:0 4px 24px rgba(0,0,0,.08);
+  }
+
+  body{
+    font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.5;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+
+  /* ── SF Background ── */
+  body::before{
+    content:'';
+    position:fixed;
+    inset:0;
+    z-index:-2;
+    background:
+      url('https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1920&q=80')
+      center center / cover no-repeat;
+  }
+  body::after{
+    content:'';
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    background:linear-gradient(
+      180deg,
+      rgba(245,245,245,.88) 0%,
+      rgba(245,245,245,.75) 40%,
+      rgba(27,58,92,.55) 100%
+    );
+    backdrop-filter:blur(2px);
+  }
+
+  /* ── Logo Bar ── */
+  .logo-bar{
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(12px);
+    text-align:center;
+    padding:1.5rem 1rem;
+    border-bottom:1px solid rgba(255,255,255,.6);
+  }
+  .logo-bar img{
+    max-width:440px;
+    width:90%;
+    height:auto;
+  }
+
+  /* ── SA shield bottom ── */
+  .sa-shield{
+    text-align:center;
+    margin-top:1.25rem;
+    padding-top:.75rem;
+  }
+  .sa-shield img{
+    height:48px;
+    width:auto;
+    opacity:.85;
+  }
+
+  /* ── Card ── */
+  .card{
+    background:var(--white);
+    max-width:620px;
+    width:100%;
+    margin:1.5rem auto 2rem;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:2rem 2rem 2.5rem;
+    position:relative;
+    backdrop-filter:blur(16px);
+    background:rgba(255,255,255,.92);
+    border:1px solid rgba(255,255,255,.7);
+  }
+
+  .card h2{
+    font-family:'Calibri','Calibri Body',Candara,'Segoe UI',sans-serif;
+    color:var(--white);
+    font-size:1.1rem;
+    font-weight:700;
+    letter-spacing:.08em;
+    margin:-2rem -2rem 1.75rem;
+    padding:1.1rem 2rem;
+    background:linear-gradient(135deg,var(--blue) 0%,var(--red) 50%,var(--blue) 100%);
+    background-size:200% 100%;
+    border-radius:var(--radius) var(--radius) 0 0;
+    text-align:center;
+    text-transform:uppercase;
+    text-shadow:0 1px 3px rgba(0,0,0,.25);
+    border-bottom:3px solid var(--red-dark);
+  }
+
+  /* ── Form fields ── */
+  .field{margin-bottom:1.25rem}
+
+  label{
+    display:block;
+    font-size:.85rem;
+    font-weight:600;
+    color:var(--text);
+    margin-bottom:.35rem;
+  }
+  label .req{color:var(--red);margin-left:2px}
+
+  input{
+    width:100%;
+    padding:.65rem .85rem;
+    font-size:.95rem;
+    border:1.5px solid var(--border);
+    border-radius:6px;
+    outline:none;
+    transition:border-color .2s,box-shadow .2s;
+    background:var(--white);
+    color:var(--text);
+    font-family:inherit;
+  }
+  input:focus{
+    border-color:var(--red);
+    box-shadow:0 0 0 3px rgba(200,16,46,.12);
+  }
+  input.invalid{
+    border-color:var(--red);
+    background:#FEF2F2;
+  }
+  .error-msg{
+    color:var(--red);
+    font-size:.78rem;
+    margin-top:.25rem;
+    display:none;
+  }
+  .error-msg.show{display:block}
+
+  /* ── Two-column row ── */
+  .row{display:flex;gap:1rem}
+  .row .field{flex:1}
+
+  /* ── Section divider ── */
+  .section-label{
+    color:var(--blue);
+    font-size:.8rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    margin:1.75rem 0 .75rem;
+  }
+
+  /* ── Submit button ── */
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.5rem;
+    width:100%;
+    padding:.85rem;
+    margin-top:.5rem;
+    font-size:1rem;
+    font-weight:600;
+    font-family:inherit;
+    color:var(--white);
+    background:var(--red);
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    transition:background .2s,transform .1s;
+  }
+  .btn:hover{background:var(--red-dark)}
+  .btn:active{transform:scale(.98)}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+
+  .btn .spinner{
+    width:18px;height:18px;
+    border:2.5px solid rgba(255,255,255,.3);
+    border-top-color:var(--white);
+    border-radius:50%;
+    animation:spin .6s linear infinite;
+    display:none;
+  }
+  .btn.loading .spinner{display:block}
+  .btn.loading .btn-text{display:none}
+
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ── Overlay (success / error) ── */
+  .overlay{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    background:rgba(255,255,255,.97);
+    border-radius:var(--radius);
+    opacity:0;pointer-events:none;
+    transition:opacity .35s;
+    padding:2rem;
+    text-align:center;
+  }
+  .overlay.visible{opacity:1;pointer-events:auto}
+
+  .overlay .icon{
+    width:64px;height:64px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:1rem;
+    animation:pop .4s ease;
+  }
+  .overlay .icon.success{background:#DEF7EC;color:#059669}
+  .overlay .icon.failure{background:#FEE2E2;color:var(--red)}
+
+  .overlay .icon svg{width:32px;height:32px}
+
+  .overlay h3{font-size:1.2rem;margin-bottom:.35rem}
+  .overlay p{color:var(--gray);font-size:.9rem;max-width:360px}
+
+  .overlay .btn-reset{
+    margin-top:1.25rem;
+    padding:.55rem 1.5rem;
+    font-size:.88rem;
+    width:auto;
+    background:var(--blue);
+  }
+  .overlay .btn-reset:hover{background:var(--blue-light)}
+
+  @keyframes pop{
+    0%{transform:scale(0)}
+    60%{transform:scale(1.15)}
+    100%{transform:scale(1)}
+  }
+
+  /* ── Footer ── */
+  .footer{
+    text-align:center;
+    padding:1.5rem 1rem;
+    font-size:.78rem;
+    color:var(--gray);
+    margin-top:auto;
+  }
+
+  /* ── Responsive ── */
+  @media(max-width:600px){
+    .logo-bar{padding:1rem .75rem}
+    .logo-bar img{max-width:300px}
+    .card{margin:1rem .75rem 1.5rem;padding:1.5rem 1.25rem 2rem}
+    .row{flex-direction:column;gap:0}
+  }
+</style>
+</head>
+<body>
+
+<div class="logo-bar">
+  <img src="thewayout-logo.png" alt="The Way Out — The Salvation Army">
+</div>
+
+<main class="card" id="card">
+  <h2>Hope House Participant Referral Form</h2>
+
+  <form id="referralForm" novalidate>
+    <div class="row">
+      <div class="field">
+        <label for="referralDate">Referral Date <span class="req">*</span></label>
+        <input type="date" id="referralDate" name="referralDate" required>
+        <div class="error-msg" id="err-referralDate">Please select a referral date.</div>
+      </div>
+      <div class="field">
+        <label for="clientDob">Client Date of Birth <span class="req">*</span></label>
+        <input type="date" id="clientDob" name="clientDob" required>
+        <div class="error-msg" id="err-clientDob">Please enter the client's date of birth.</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="clientName">Client First and Last Name</label>
+      <input type="text" id="clientName" name="clientName" placeholder="Jane Doe" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label for="clientPhone">Client Phone</label>
+      <input type="tel" id="clientPhone" name="clientPhone" placeholder="(555) 123-4567">
+      <div class="error-msg" id="err-clientPhone">Please enter a valid phone number.</div>
+    </div>
+
+    <div class="field">
+      <label for="clientEmail">Client Email</label>
+      <input type="email" id="clientEmail" name="clientEmail" placeholder="client@example.com">
+      <div class="error-msg" id="err-clientEmail">Please enter a valid email address.</div>
+    </div>
+
+    <div class="section-label">Referring Partner</div>
+
+    <div class="field">
+      <label for="referringAgency">Referring Agency</label>
+      <input type="text" id="referringAgency" name="referringAgency" placeholder="Agency name">
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="partnerName">Partner Name</label>
+        <input type="text" id="partnerName" name="partnerName" placeholder="Full name">
+      </div>
+      <div class="field">
+        <label for="partnerPhone">Partner Phone</label>
+        <input type="tel" id="partnerPhone" name="partnerPhone" placeholder="(555) 123-4567">
+        <div class="error-msg" id="err-partnerPhone">Please enter a valid phone number.</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="partnerEmail">Partner Email</label>
+      <input type="email" id="partnerEmail" name="partnerEmail" placeholder="partner@agency.org">
+      <div class="error-msg" id="err-partnerEmail">Please enter a valid email address.</div>
+    </div>
+
+    <button type="submit" class="btn" id="submitBtn">
+      <span class="btn-text">Submit Referral</span>
+      <span class="spinner"></span>
+    </button>
+  </form>
+
+  <!-- Success overlay -->
+  <div class="overlay" id="successOverlay">
+    <div class="icon success">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h3>Referral Submitted</h3>
+    <p>The referral has been recorded and an updated spreadsheet has been emailed.</p>
+    <button class="btn btn-reset" onclick="resetForm()">Submit Another</button>
+  </div>
+
+  <!-- Error overlay -->
+  <div class="overlay" id="errorOverlay">
+    <div class="icon failure">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </div>
+    <h3>Submission Failed</h3>
+    <p id="errorMsg">Something went wrong. Please try again or contact support.</p>
+    <button class="btn btn-reset" onclick="hideOverlays()">Try Again</button>
+  </div>
+</main>
+
+<footer class="footer">
+  &copy; 2026 The Way Out SF &mdash; The Salvation Army
+</footer>
+
+<script>
+  // ── CONFIG ──────────────────────────────────────────────
+  // Paste your Google Apps Script web app URL here:
+  const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+  // ────────────────────────────────────────────────────────
+
+  const form = document.getElementById('referralForm');
+  const btn  = document.getElementById('submitBtn');
+
+  // Set default referral date to today
+  document.getElementById('referralDate').valueAsDate = new Date();
+
+  // ── Validation helpers ──
+  const phoneRe = /^[\d\s().+-]{7,20}$/;
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function showErr(id, show) {
+    const el = document.getElementById('err-' + id);
+    const inp = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('show', show);
+    inp.classList.toggle('invalid', show);
+  }
+
+  function validate() {
+    let ok = true;
+
+    // Required dates
+    ['referralDate', 'clientDob'].forEach(id => {
+      const empty = !document.getElementById(id).value;
+      showErr(id, empty);
+      if (empty) ok = false;
+    });
+
+    // Optional phone fields — validate format only if filled
+    ['clientPhone', 'partnerPhone'].forEach(id => {
+      const val = document.getElementById(id).value.trim();
+      const bad = val && !phoneRe.test(val);
+      showErr(id, bad);
+      if (bad) ok = false;
+    });
+
+    // Optional email fields — validate format only if filled
+    ['clientEmail', 'partnerEmail'].forEach(id => {
+      const val = document.getElementById(id).value.trim();
+      const bad = val && !emailRe.test(val);
+      showErr(id, bad);
+      if (bad) ok = false;
+    });
+
+    return ok;
+  }
+
+  // Clear inline errors on input
+  form.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', () => showErr(inp.id, false));
+  });
+
+  // ── Submit ──
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    const payload = {
+      referralDate:     document.getElementById('referralDate').value,
+      clientDob:        document.getElementById('clientDob').value,
+      clientName:       document.getElementById('clientName').value.trim(),
+      clientPhone:      document.getElementById('clientPhone').value.trim(),
+      clientEmail:      document.getElementById('clientEmail').value.trim(),
+      referringAgency:  document.getElementById('referringAgency').value.trim(),
+      partnerName:      document.getElementById('partnerName').value.trim(),
+      partnerPhone:     document.getElementById('partnerPhone').value.trim(),
+      partnerEmail:     document.getElementById('partnerEmail').value.trim(),
+    };
+
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',          // Apps Script doesn't support CORS preflight
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(payload),
+      });
+      // no-cors means we can't read the response, so we assume success
+      // if no network error was thrown
+      showOverlay('successOverlay');
+    } catch (err) {
+      document.getElementById('errorMsg').textContent =
+        'Network error — please check your connection and try again.';
+      showOverlay('errorOverlay');
+    } finally {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  });
+
+  // ── Overlays ──
+  function showOverlay(id) {
+    document.getElementById(id).classList.add('visible');
+  }
+  function hideOverlays() {
+    document.querySelectorAll('.overlay').forEach(o => o.classList.remove('visible'));
+  }
+  function resetForm() {
+    hideOverlays();
+    form.reset();
+    document.getElementById('referralDate').valueAsDate = new Date();
+  }
+</script>
+</body>
+</html>
