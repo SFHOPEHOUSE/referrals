@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicle Travel Log — The Way Out SF</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root{
+    --red:#C8102E;
+    --red-dark:#A00D24;
+    --blue:#1B3A5C;
+    --blue-light:#24507A;
+    --white:#FFFFFF;
+    --bg:#F5F5F5;
+    --text:#1A1A1A;
+    --gray:#6B7280;
+    --border:#D1D5DB;
+    --radius:10px;
+    --shadow:0 4px 24px rgba(0,0,0,.08);
+    --rate:0.72;
+  }
+
+  body{
+    font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.5;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+
+  /* ── SF Background ── */
+  body::before{
+    content:'';
+    position:fixed;
+    inset:0;
+    z-index:-2;
+    background:
+      url('https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1920&q=80')
+      center center / cover no-repeat;
+  }
+  body::after{
+    content:'';
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    background:linear-gradient(
+      180deg,
+      rgba(245,245,245,.88) 0%,
+      rgba(245,245,245,.75) 40%,
+      rgba(27,58,92,.55) 100%
+    );
+    backdrop-filter:blur(2px);
+  }
+
+  /* ── Logo Bar ── */
+  .logo-bar{
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(12px);
+    text-align:center;
+    padding:1.5rem 1rem;
+    border-bottom:1px solid rgba(255,255,255,.6);
+  }
+  .logo-bar img{
+    max-width:480px;
+    width:90%;
+    height:auto;
+  }
+
+  /* ── Card ── */
+  .card{
+    max-width:640px;
+    width:100%;
+    margin:1.5rem auto 2rem;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:2rem 2rem 2.5rem;
+    position:relative;
+    backdrop-filter:blur(16px);
+    background:rgba(255,255,255,.92);
+    border:1px solid rgba(255,255,255,.7);
+  }
+
+  .card h2{
+    font-family:'Calibri','Calibri Body',Candara,'Segoe UI',sans-serif;
+    color:var(--white);
+    font-size:1.1rem;
+    font-weight:700;
+    letter-spacing:.08em;
+    margin:-2rem -2rem 1.75rem;
+    padding:1.1rem 2rem;
+    background:linear-gradient(135deg,var(--blue) 0%,var(--red) 50%,var(--blue) 100%);
+    background-size:200% 100%;
+    border-radius:var(--radius) var(--radius) 0 0;
+    text-align:center;
+    text-transform:uppercase;
+    text-shadow:0 1px 3px rgba(0,0,0,.25);
+    border-bottom:3px solid var(--red-dark);
+  }
+
+  /* ── Program Toggle ── */
+  .program-toggle{
+    display:flex;
+    gap:.6rem;
+    margin-bottom:1.5rem;
+  }
+  .program-toggle input[type="radio"]{display:none}
+  .program-toggle label{
+    flex:1;
+    text-align:center;
+    padding:.75rem .5rem;
+    border:2px solid var(--border);
+    border-radius:8px;
+    cursor:pointer;
+    font-size:.92rem;
+    font-weight:600;
+    color:var(--gray);
+    background:var(--white);
+    transition:all .2s;
+    user-select:none;
+  }
+  .program-toggle input:checked + label{
+    border-color:var(--red);
+    background:var(--red);
+    color:var(--white);
+    box-shadow:0 2px 8px rgba(200,16,46,.25);
+  }
+  .program-toggle label:hover{
+    border-color:var(--red);
+    color:var(--red);
+  }
+  .program-toggle input:checked + label:hover{
+    color:var(--white);
+  }
+  .program-error{
+    color:var(--red);
+    font-size:.78rem;
+    margin-top:-.9rem;
+    margin-bottom:.9rem;
+    display:none;
+  }
+  .program-error.show{display:block}
+
+  /* ── Section divider ── */
+  .section-label{
+    color:var(--blue);
+    font-size:.8rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    margin:1.75rem 0 .75rem;
+    padding-bottom:.4rem;
+    border-bottom:1.5px solid #E5E7EB;
+  }
+
+  /* ── Form fields ── */
+  .field{margin-bottom:1.1rem}
+
+  label{
+    display:block;
+    font-size:.85rem;
+    font-weight:600;
+    color:var(--text);
+    margin-bottom:.35rem;
+  }
+  label .req{color:var(--red);margin-left:2px}
+
+  input, select, textarea{
+    width:100%;
+    padding:.7rem .85rem;
+    font-size:1rem;
+    border:1.5px solid var(--border);
+    border-radius:6px;
+    outline:none;
+    transition:border-color .2s,box-shadow .2s;
+    background:var(--white);
+    color:var(--text);
+    font-family:inherit;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+  input:focus, select:focus, textarea:focus{
+    border-color:var(--red);
+    box-shadow:0 0 0 3px rgba(200,16,46,.12);
+  }
+  input.invalid, select.invalid, textarea.invalid{
+    border-color:var(--red);
+    background:#FEF2F2;
+  }
+  .error-msg{
+    color:var(--red);
+    font-size:.78rem;
+    margin-top:.25rem;
+    display:none;
+  }
+  .error-msg.show{display:block}
+
+  select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right .85rem center;
+    padding-right:2.25rem;
+  }
+
+  textarea{
+    resize:vertical;
+    min-height:80px;
+  }
+
+  /* ── Two-column row ── */
+  .row{display:flex;gap:1rem}
+  .row .field{flex:1}
+
+  /* ── Odometer / Miles block ── */
+  .odo-row{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:1rem;
+  }
+
+  /* ── Reimbursement callout ── */
+  .reimb-box{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:linear-gradient(135deg,rgba(27,58,92,.07),rgba(200,16,46,.06));
+    border:1.5px solid rgba(27,58,92,.15);
+    border-radius:8px;
+    padding:.85rem 1.1rem;
+    margin-top:1.25rem;
+  }
+  .reimb-box .label{
+    font-size:.82rem;
+    font-weight:600;
+    color:var(--blue);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+  }
+  .reimb-box .amount{
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--red);
+    font-variant-numeric:tabular-nums;
+  }
+  .reimb-box .rate-note{
+    font-size:.72rem;
+    color:var(--gray);
+    margin-top:.1rem;
+  }
+
+  /* ── Submit button ── */
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.5rem;
+    width:100%;
+    padding:.9rem;
+    margin-top:1.25rem;
+    font-size:1rem;
+    font-weight:600;
+    font-family:inherit;
+    color:var(--white);
+    background:var(--red);
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    transition:background .2s,transform .1s;
+  }
+  .btn:hover{background:var(--red-dark)}
+  .btn:active{transform:scale(.98)}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+
+  .btn .spinner{
+    width:18px;height:18px;
+    border:2.5px solid rgba(255,255,255,.3);
+    border-top-color:var(--white);
+    border-radius:50%;
+    animation:spin .6s linear infinite;
+    display:none;
+  }
+  .btn.loading .spinner{display:block}
+  .btn.loading .btn-text{display:none}
+
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ── Overlay ── */
+  .overlay{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    background:rgba(255,255,255,.97);
+    border-radius:var(--radius);
+    opacity:0;pointer-events:none;
+    transition:opacity .35s;
+    padding:2rem;
+    text-align:center;
+  }
+  .overlay.visible{opacity:1;pointer-events:auto}
+  .overlay .icon{
+    width:64px;height:64px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:1rem;
+    animation:pop .4s ease;
+  }
+  .overlay .icon.success{background:#DEF7EC;color:#059669}
+  .overlay .icon.failure{background:#FEE2E2;color:var(--red)}
+  .overlay .icon svg{width:32px;height:32px}
+  .overlay h3{font-size:1.2rem;margin-bottom:.35rem}
+  .overlay p{color:var(--gray);font-size:.9rem;max-width:360px}
+  .overlay .btn-reset{
+    margin-top:1.25rem;
+    padding:.55rem 1.5rem;
+    font-size:.88rem;
+    width:auto;
+    background:var(--blue);
+  }
+  .overlay .btn-reset:hover{background:var(--blue-light)}
+
+  @keyframes pop{
+    0%{transform:scale(0)}
+    60%{transform:scale(1.15)}
+    100%{transform:scale(1)}
+  }
+
+  /* ── Footer ── */
+  .footer{
+    text-align:center;
+    padding:1.5rem 1rem;
+    font-size:.78rem;
+    color:var(--gray);
+    margin-top:auto;
+  }
+
+  /* ── Responsive ── */
+  @media(max-width:600px){
+    .logo-bar{padding:.75rem .5rem}
+    .logo-bar img{max-width:260px}
+    .card{margin:.5rem .5rem 1rem;padding:1.25rem 1rem 1.75rem}
+    .card h2{margin:-1.25rem -1rem 1.25rem;padding:.9rem 1rem;font-size:.95rem}
+    .row{flex-direction:column;gap:0}
+    .odo-row{grid-template-columns:1fr 1fr;gap:.6rem}
+    .odo-row .field:last-child{grid-column:1/-1}
+    .btn{padding:1rem}
+    .footer{font-size:.72rem;padding:1rem .75rem}
+  }
+
+  @media(max-width:380px){
+    .logo-bar img{max-width:220px}
+    .card{margin:.25rem .25rem .75rem;padding:1rem .85rem 1.5rem}
+    .odo-row{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div class="logo-bar">
+  <img src="thewayout-logo.png" alt="The Way Out — The Salvation Army">
+</div>
+
+<main class="card" id="card">
+  <h2>Vehicle Travel Log</h2>
+
+  <form id="travelForm" novalidate>
+
+    <!-- Program Selection -->
+    <div class="field">
+      <label>Program <span class="req">*</span></label>
+      <div class="program-toggle">
+        <input type="radio" name="program" id="prog-hope" value="Hope House">
+        <label for="prog-hope">Hope House</label>
+        <input type="radio" name="program" id="prog-wells" value="Wells Place">
+        <label for="prog-wells">Wells Place</label>
+      </div>
+      <div class="program-error" id="err-program">Please select a program.</div>
+    </div>
+
+    <!-- Trip Info -->
+    <div class="section-label">Trip Details</div>
+
+    <div class="row">
+      <div class="field">
+        <label for="tripDate">Date of Trip <span class="req">*</span></label>
+        <input type="date" id="tripDate" name="tripDate" required>
+        <div class="error-msg" id="err-tripDate">Please select the trip date.</div>
+      </div>
+      <div class="field">
+        <label for="staffName">Staff Name <span class="req">*</span></label>
+        <input type="text" id="staffName" name="staffName" placeholder="Full name" required autocomplete="name">
+        <div class="error-msg" id="err-staffName">Please enter the staff name.</div>
+      </div>
+    </div>
+
+    <!-- Odometer -->
+    <div class="section-label">Mileage</div>
+
+    <div class="odo-row">
+      <div class="field">
+        <label for="odoStart">Starting Odometer <span class="req">*</span></label>
+        <input type="number" id="odoStart" name="odoStart" placeholder="e.g. 12450" min="0" step="0.1" required inputmode="decimal">
+        <div class="error-msg" id="err-odoStart">Enter starting odometer.</div>
+      </div>
+      <div class="field">
+        <label for="odoEnd">Ending Odometer <span class="req">*</span></label>
+        <input type="number" id="odoEnd" name="odoEnd" placeholder="e.g. 12478" min="0" step="0.1" required inputmode="decimal">
+        <div class="error-msg" id="err-odoEnd">Enter ending odometer.</div>
+      </div>
+      <div class="field">
+        <label for="totalMiles">Total Miles</label>
+        <input type="text" id="totalMiles" name="totalMiles" placeholder="Auto-calculated" readonly tabindex="-1" style="background:#F9FAFB;color:var(--gray);cursor:default">
+      </div>
+    </div>
+
+    <!-- Reimbursement estimate -->
+    <div class="reimb-box" id="reimbBox" style="display:none">
+      <div>
+        <div class="label">Estimated Reimbursement</div>
+        <div class="rate-note">@ $0.72 per mile</div>
+      </div>
+      <div class="amount" id="reimbAmount">$0.00</div>
+    </div>
+
+    <!-- Addresses -->
+    <div class="section-label">Route</div>
+
+    <div class="field">
+      <label for="startAddress">Starting Address <span class="req">*</span></label>
+      <input type="text" id="startAddress" name="startAddress" placeholder="123 Main St, San Francisco, CA" required autocomplete="street-address">
+      <div class="error-msg" id="err-startAddress">Please enter the starting address.</div>
+    </div>
+
+    <div class="field">
+      <label for="destAddress">Destination Address <span class="req">*</span></label>
+      <input type="text" id="destAddress" name="destAddress" placeholder="456 Market St, San Francisco, CA" required autocomplete="off">
+      <div class="error-msg" id="err-destAddress">Please enter the destination address.</div>
+    </div>
+
+    <!-- Purpose -->
+    <div class="section-label">Purpose</div>
+
+    <div class="field">
+      <label for="tripPurpose">Purpose of Trip <span class="req">*</span></label>
+      <textarea id="tripPurpose" name="tripPurpose" placeholder="Describe the reason for this trip (e.g. Client transport to medical appointment, supply pickup, site visit...)" required></textarea>
+      <div class="error-msg" id="err-tripPurpose">Please describe the purpose of the trip.</div>
+    </div>
+
+    <button type="submit" class="btn" id="submitBtn">
+      <span class="btn-text">Submit Trip Log</span>
+      <span class="spinner"></span>
+    </button>
+  </form>
+
+  <!-- Success overlay -->
+  <div class="overlay" id="successOverlay">
+    <div class="icon success">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h3>Trip Logged</h3>
+    <p id="successMsg">Your trip has been recorded and sent to the spreadsheet.</p>
+    <button class="btn btn-reset" onclick="resetForm()">Log Another Trip</button>
+  </div>
+
+  <!-- Error overlay -->
+  <div class="overlay" id="errorOverlay">
+    <div class="icon failure">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </div>
+    <h3>Submission Failed</h3>
+    <p id="errorMsg">Something went wrong. Please try again or contact support.</p>
+    <button class="btn btn-reset" onclick="hideOverlays()">Try Again</button>
+  </div>
+</main>
+
+<footer class="footer">
+  &copy; 2026 The Way Out SF &mdash; The Salvation Army
+</footer>
+
+<script>
+  // ── CONFIG ─────────────────────────────────────────────────
+  // Paste your Power Automate HTTP trigger URLs below.
+  // Each program routes to its own flow / spreadsheet.
+  const FLOW_URLS = {
+    'Hope House':  'PASTE_HOPE_HOUSE_FLOW_URL_HERE',
+    'Wells Place': 'PASTE_WELLS_PLACE_FLOW_URL_HERE',
+  };
+  const RATE_PER_MILE = 0.72;
+  // ───────────────────────────────────────────────────────────
+
+  const form   = document.getElementById('travelForm');
+  const btn    = document.getElementById('submitBtn');
+  const odoS   = document.getElementById('odoStart');
+  const odoE   = document.getElementById('odoEnd');
+  const milesF = document.getElementById('totalMiles');
+  const reimbB = document.getElementById('reimbBox');
+  const reimbA = document.getElementById('reimbAmount');
+
+  // Set default date to today
+  document.getElementById('tripDate').valueAsDate = new Date();
+
+  // ── Auto-calculate miles & reimbursement ──
+  function calcMiles() {
+    const s = parseFloat(odoS.value);
+    const e = parseFloat(odoE.value);
+    if (!isNaN(s) && !isNaN(e) && e > s) {
+      const miles = (e - s).toFixed(1);
+      milesF.value = miles;
+      reimbA.textContent = '$' + (miles * RATE_PER_MILE).toFixed(2);
+      reimbB.style.display = 'flex';
+    } else {
+      milesF.value = '';
+      reimbB.style.display = 'none';
+    }
+  }
+  odoS.addEventListener('input', calcMiles);
+  odoE.addEventListener('input', calcMiles);
+
+  // ── Validation ──
+  function showErr(id, show) {
+    const el  = document.getElementById('err-' + id);
+    const inp = document.getElementById(id);
+    if (!el || !inp) return;
+    el.classList.toggle('show', show);
+    inp.classList.toggle('invalid', show);
+  }
+
+  function validate() {
+    let ok = true;
+
+    // Program
+    const program = document.querySelector('input[name="program"]:checked');
+    const progErr = document.getElementById('err-program');
+    if (!program) {
+      progErr.classList.add('show');
+      ok = false;
+    } else {
+      progErr.classList.remove('show');
+    }
+
+    // Required text / date fields
+    ['tripDate','staffName','startAddress','destAddress','tripPurpose'].forEach(id => {
+      const empty = !document.getElementById(id).value.trim();
+      showErr(id, empty);
+      if (empty) ok = false;
+    });
+
+    // Odometer required + logic
+    const s = parseFloat(odoS.value);
+    const e = parseFloat(odoE.value);
+    const badStart = isNaN(s) || s < 0;
+    const badEnd   = isNaN(e) || e < 0;
+    const badOrder = !badStart && !badEnd && e <= s;
+    showErr('odoStart', badStart);
+    showErr('odoEnd', badEnd || badOrder);
+    if (badStart || badEnd || badOrder) {
+      if (badOrder) document.getElementById('err-odoEnd').textContent = 'Ending odometer must be greater than starting.';
+      else document.getElementById('err-odoEnd').textContent = 'Enter ending odometer.';
+      ok = false;
+    }
+
+    return ok;
+  }
+
+  // Clear errors on input
+  form.querySelectorAll('input, select, textarea').forEach(el => {
+    el.addEventListener('input', () => showErr(el.id, false));
+  });
+  document.querySelectorAll('input[name="program"]').forEach(r => {
+    r.addEventListener('change', () => document.getElementById('err-program').classList.remove('show'));
+  });
+
+  // ── Submit ──
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    const program = document.querySelector('input[name="program"]:checked').value;
+    const flowUrl = FLOW_URLS[program];
+
+    if (!flowUrl || flowUrl.startsWith('PASTE_')) {
+      document.getElementById('errorMsg').textContent =
+        'Flow URL not configured for ' + program + '. Please contact your administrator.';
+      showOverlay('errorOverlay');
+      return;
+    }
+
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    const miles = parseFloat(milesF.value) || 0;
+
+    const payload = {
+      program:          program,
+      tripDate:         document.getElementById('tripDate').value,
+      staffName:        document.getElementById('staffName').value.trim(),
+      startingOdometer: parseFloat(odoS.value),
+      endingOdometer:   parseFloat(odoE.value),
+      totalMiles:       miles,
+      estimatedReimbursement: (miles * RATE_PER_MILE).toFixed(2),
+      startingAddress:  document.getElementById('startAddress').value.trim(),
+      destinationAddress: document.getElementById('destAddress').value.trim(),
+      purposeOfTrip:    document.getElementById('tripPurpose').value.trim(),
+      submittedAt:      new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }),
+    };
+
+    try {
+      await new Promise((resolve) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', flowUrl, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onreadystatechange = () => { if (xhr.readyState === 4) resolve(); };
+        xhr.onerror = () => resolve();
+        setTimeout(resolve, 5000);
+        xhr.send(JSON.stringify(payload));
+      });
+      document.getElementById('successMsg').textContent =
+        'Your trip for ' + program + ' has been recorded and sent to the spreadsheet.';
+      showOverlay('successOverlay');
+    } catch (err) {
+      document.getElementById('errorMsg').textContent =
+        'Network error — please check your connection and try again.';
+      showOverlay('errorOverlay');
+    } finally {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  });
+
+  // ── Overlays ──
+  function showOverlay(id) {
+    document.getElementById(id).classList.add('visible');
+  }
+  function hideOverlays() {
+    document.querySelectorAll('.overlay').forEach(o => o.classList.remove('visible'));
+  }
+  function resetForm() {
+    hideOverlays();
+    form.reset();
+    document.getElementById('tripDate').valueAsDate = new Date();
+    milesF.value = '';
+    reimbB.style.display = 'none';
+  }
+</script>
+</body>
+</html>
