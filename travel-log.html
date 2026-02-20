@@ -271,17 +271,17 @@
     .card{margin:.5rem .5rem 1rem;padding:1.25rem 1rem 1.75rem}
     .card h2{margin:-1.25rem -1rem 1.25rem;padding:.9rem 1rem;font-size:.95rem}
 
-    /* Stack staff name + date vertically on mobile */
-    .staff-fields{flex-direction:column;gap:.5rem}
-    .staff-fields input{padding:.55rem .7rem;font-size:.95rem}
-    .staff-fields label{font-size:.8rem}
-    input[type="date"]{
-      max-width:180px;
-      padding:.45rem .6rem;
-      font-size:.88rem;
+    /* Staff name + date side by side, equal half width */
+    .staff-fields{flex-direction:row;gap:.5rem}
+    .staff-fields .field{flex:1;min-width:0}
+    .staff-fields input{
+      padding:.45rem .5rem;
+      font-size:.82rem;
+      width:100%;
       -webkit-appearance:none;
       appearance:none;
     }
+    .staff-fields label{font-size:.75rem}
 
     /* Compact all inputs on mobile */
     input,textarea{padding:.55rem .7rem;font-size:1rem}
@@ -294,7 +294,7 @@
   @media(max-width:380px){
     .logo-bar img{max-width:220px}
     .card{margin:.25rem .25rem .75rem;padding:1rem .85rem 1.5rem}
-    .staff-fields input{font-size:.9rem;padding:.5rem .65rem}
+    .staff-fields input{font-size:.78rem;padding:.4rem .45rem}
     .leaflet-map{height:160px !important}
   }
 </style>
