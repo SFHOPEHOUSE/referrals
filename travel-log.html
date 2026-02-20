@@ -796,41 +796,52 @@ form.addEventListener('submit', async (e) => {
     };
   });
 
-  const totalMiles = tripList.reduce((s, t) => s + t.miles, 0);
-  const tripDate   = document.getElementById('tripDate').value;
-  const staffName  = document.getElementById('staffName').value.trim();
-  const purpose    = document.getElementById('tripPurpose').value.trim();
+  const totalMiles  = tripList.reduce((s, t) => s + t.miles, 0);
+  const tripDate    = document.getElementById('tripDate').value;
+  const staffName   = document.getElementById('staffName').value.trim();
+  const purpose     = document.getElementById('tripPurpose').value.trim();
+  const vehicleIssues = document.getElementById('vehicleIssues').value.trim() || 'None reported';
   const submittedAt = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
+  const allReceipts = receiptImages.filter(Boolean).map(r => ({ name: r.name, amount: r.amount, data: r.base64 }));
 
-  // Group trips by program and send to each program's flow
-  const byProgram = {};
-  tripList.forEach(t => {
-    if (!byProgram[t.program]) byProgram[t.program] = [];
-    byProgram[t.program].push(t);
-  });
-
-  const sends = Object.entries(byProgram).map(([prog, progTrips]) => {
-    const flowUrl = FLOW_URLS[prog];
+  // Send one POST per trip → one row per trip in Excel
+  const sends = tripList.map((trip, i) => {
+    const flowUrl = FLOW_URLS[trip.program];
     if (!flowUrl || flowUrl.startsWith('PASTE_')) return Promise.resolve();
-    const progMiles = progTrips.reduce((s, t) => s + t.miles, 0);
+
     const payload = {
-      program:                prog,
+      // Staff & date (repeated on every row for easy filtering in Excel)
       tripDate,
       staffName,
-      trips:                  progTrips,
-      totalMiles:             parseFloat(progMiles.toFixed(2)),
-      purposeOfTrip:          purpose,
-      vehicleIssues:          document.getElementById('vehicleIssues').value.trim() || 'None reported',
-      receipts:               receiptImages.filter(Boolean).map(r => ({ name: r.name, data: r.base64 })),
+      program:            trip.program,
+
+      // Per-trip fields → one Excel row each
+      tripNumber:         trip.tripNumber,
+      startingAddress:    trip.startingAddress,
+      destinationAddress: trip.destinationAddress,
+      miles:              trip.miles,
+      duration:           trip.duration,
+
+      // Shared fields (same value on every row)
+      purposeOfTrip:      purpose,
+      vehicleIssues,
+
+      // Receipts only on first row to avoid duplication
+      receipts:           i === 0 ? allReceipts : [],
+
+      // Running context
+      totalTrips:         tripList.length,
+      totalMiles:         parseFloat(totalMiles.toFixed(2)),
       submittedAt,
     };
+
     return new Promise(resolve => {
       const xhr = new XMLHttpRequest();
       xhr.open('POST', flowUrl, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.onreadystatechange = () => { if (xhr.readyState === 4) resolve(); };
       xhr.onerror = () => resolve();
-      setTimeout(resolve, 6000);
+      setTimeout(resolve, 8000);
       xhr.send(JSON.stringify(payload));
     });
   });
