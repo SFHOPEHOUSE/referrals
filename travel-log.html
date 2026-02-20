@@ -4,72 +4,47 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trip Log — The Way Out SF</title>
-
-<!-- Leaflet map library -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
   :root{
-    --red:#C8102E;
-    --red-dark:#A00D24;
-    --blue:#1B3A5C;
-    --blue-light:#24507A;
-    --white:#FFFFFF;
-    --bg:#F5F5F5;
-    --text:#1A1A1A;
-    --gray:#6B7280;
-    --border:#D1D5DB;
-    --radius:10px;
+    --red:#C8102E;--red-dark:#A00D24;
+    --blue:#1B3A5C;--blue-light:#24507A;
+    --white:#FFFFFF;--bg:#F5F5F5;
+    --text:#1A1A1A;--gray:#6B7280;
+    --border:#D1D5DB;--radius:10px;
     --shadow:0 4px 24px rgba(0,0,0,.08);
   }
-
   body{
     font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    line-height:1.5;
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    position:relative;
+    background:var(--bg);color:var(--text);line-height:1.5;
+    min-height:100vh;display:flex;flex-direction:column;position:relative;
   }
-
   body::before{
-    content:'';
-    position:fixed;inset:0;z-index:-2;
+    content:'';position:fixed;inset:0;z-index:-2;
     background:url('https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1920&q=80') center/cover no-repeat;
   }
   body::after{
-    content:'';
-    position:fixed;inset:0;z-index:-1;
+    content:'';position:fixed;inset:0;z-index:-1;
     background:linear-gradient(180deg,rgba(245,245,245,.88) 0%,rgba(245,245,245,.75) 40%,rgba(27,58,92,.55) 100%);
     backdrop-filter:blur(2px);
   }
-
   .logo-bar{
-    background:rgba(255,255,255,.92);
-    backdrop-filter:blur(12px);
-    text-align:center;
-    padding:1.5rem 1rem;
+    background:rgba(255,255,255,.92);backdrop-filter:blur(12px);
+    text-align:center;padding:1.5rem 1rem;
     border-bottom:1px solid rgba(255,255,255,.6);
   }
   .logo-bar img{max-width:480px;width:90%;height:auto}
 
+  /* ── Card ── */
   .card{
-    max-width:640px;width:100%;
-    margin:1.5rem auto 2rem;
-    border-radius:var(--radius);
-    box-shadow:var(--shadow);
-    padding:2rem 2rem 2.5rem;
-    position:relative;
-    backdrop-filter:blur(16px);
-    background:rgba(255,255,255,.92);
+    max-width:640px;width:100%;margin:1.5rem auto 2rem;
+    border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:2rem 2rem 2.5rem;position:relative;
+    backdrop-filter:blur(16px);background:rgba(255,255,255,.92);
     border:1px solid rgba(255,255,255,.7);
   }
-
   .card h2{
     font-family:'Calibri','Calibri Body',Candara,'Segoe UI',sans-serif;
     color:var(--white);font-size:1.1rem;font-weight:700;letter-spacing:.08em;
@@ -77,8 +52,7 @@
     background:linear-gradient(135deg,var(--blue) 0%,var(--red) 50%,var(--blue) 100%);
     border-radius:var(--radius) var(--radius) 0 0;
     text-align:center;text-transform:uppercase;
-    text-shadow:0 1px 3px rgba(0,0,0,.25);
-    border-bottom:3px solid var(--red-dark);
+    text-shadow:0 1px 3px rgba(0,0,0,.25);border-bottom:3px solid var(--red-dark);
   }
 
   /* ── Program Toggle ── */
@@ -88,8 +62,7 @@
     flex:1;text-align:center;padding:.75rem .5rem;
     border:2px solid var(--border);border-radius:8px;
     cursor:pointer;font-size:.92rem;font-weight:600;
-    color:var(--gray);background:var(--white);
-    transition:all .2s;user-select:none;
+    color:var(--gray);background:var(--white);transition:all .2s;user-select:none;
   }
   .program-toggle input:checked + label{
     border-color:var(--red);background:var(--red);color:var(--white);
@@ -112,36 +85,62 @@
   .field{margin-bottom:1.1rem}
   label{display:block;font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.35rem}
   label .req{color:var(--red);margin-left:2px}
-
-  input, textarea{
+  input,textarea{
     width:100%;padding:.7rem .85rem;font-size:1rem;
     border:1.5px solid var(--border);border-radius:6px;
     outline:none;transition:border-color .2s,box-shadow .2s;
     background:var(--white);color:var(--text);font-family:inherit;
   }
-  input:focus, textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(200,16,46,.12)}
-  input.invalid, textarea.invalid{border-color:var(--red);background:#FEF2F2}
+  input:focus,textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(200,16,46,.12)}
+  input.invalid,textarea.invalid{border-color:var(--red);background:#FEF2F2}
   .error-msg{color:var(--red);font-size:.78rem;margin-top:.25rem;display:none}
   .error-msg.show{display:block}
   textarea{resize:vertical;min-height:80px}
-
   .row{display:flex;gap:1rem}
   .row .field{flex:1}
+
+  /* ── Trip Card ── */
+  .trip-card{
+    border:1.5px solid var(--border);border-radius:8px;
+    padding:1.1rem 1.1rem 1rem;margin-bottom:1rem;
+    background:rgba(255,255,255,.6);
+    transition:border-color .2s;
+  }
+  .trip-card:focus-within{border-color:rgba(200,16,46,.3)}
+
+  .trip-header{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:.9rem;
+  }
+  .trip-num{
+    font-size:.8rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.07em;color:var(--blue);
+    display:flex;align-items:center;gap:.4rem;
+  }
+  .trip-num svg{width:14px;height:14px;opacity:.7}
+
+  .remove-btn{
+    display:inline-flex;align-items:center;gap:.3rem;
+    font-size:.75rem;font-weight:600;color:var(--gray);
+    background:none;border:1.5px solid var(--border);
+    border-radius:5px;padding:.25rem .6rem;cursor:pointer;
+    transition:all .15s;font-family:inherit;
+  }
+  .remove-btn:hover{color:var(--red);border-color:var(--red);background:#FEF2F2}
 
   /* ── Route button ── */
   .route-btn{
     display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
-    width:100%;padding:.75rem;margin-top:.25rem;
-    font-size:.92rem;font-weight:600;font-family:inherit;
+    width:100%;padding:.7rem;margin-top:.2rem;
+    font-size:.88rem;font-weight:600;font-family:inherit;
     color:var(--white);background:var(--blue);
-    border:none;border-radius:6px;cursor:pointer;
-    transition:background .2s,transform .1s;
+    border:none;border-radius:6px;cursor:pointer;transition:background .2s,transform .1s;
   }
   .route-btn:hover{background:var(--blue-light)}
   .route-btn:active{transform:scale(.98)}
   .route-btn:disabled{opacity:.6;cursor:not-allowed}
   .route-btn .spinner{
-    width:16px;height:16px;
+    width:15px;height:15px;
     border:2px solid rgba(255,255,255,.35);
     border-top-color:var(--white);border-radius:50%;
     animation:spin .6s linear infinite;display:none;
@@ -149,57 +148,63 @@
   .route-btn.loading .spinner{display:block}
   .route-btn.loading .btn-text{display:none}
 
-  /* ── Map container ── */
-  #mapWrap{
-    margin-top:1rem;
-    border-radius:8px;overflow:hidden;
-    border:1.5px solid var(--border);
-    display:none;
+  /* ── Map ── */
+  .map-wrap{
+    margin-top:.85rem;border-radius:7px;
+    overflow:hidden;border:1.5px solid var(--border);display:none;
   }
-  #map{height:260px;width:100%}
+  .map-wrap .leaflet-map{height:210px;width:100%}
 
-  /* ── Miles result ── */
-  .miles-result{
-    display:none;
-    margin-top:.75rem;
-    padding:.7rem 1rem;
-    background:#F0F9FF;
-    border:1.5px solid #BAE6FD;
-    border-radius:8px;
-    font-size:.88rem;
-    color:var(--blue);
+  /* ── Miles / route error ── */
+  .miles-pill{
+    display:none;margin-top:.6rem;padding:.55rem .9rem;
+    background:#EFF6FF;border:1.5px solid #BFDBFE;
+    border-radius:6px;font-size:.85rem;color:#1E40AF;
   }
-  .miles-result strong{font-size:1rem}
-  .route-error{
-    display:none;
-    margin-top:.6rem;
-    padding:.6rem .9rem;
+  .miles-pill strong{font-weight:700}
+  .route-err{
+    display:none;margin-top:.5rem;padding:.5rem .8rem;
     background:#FEF2F2;border:1.5px solid #FCA5A5;
-    border-radius:6px;font-size:.82rem;color:var(--red);
+    border-radius:5px;font-size:.8rem;color:var(--red);
   }
-  .route-error.show{display:block}
+  .route-err.show{display:block}
+  .miles-pill.show{display:block}
 
-  /* ── Reimbursement callout ── */
-  .reimb-box{
-    display:none;
-    align-items:center;justify-content:space-between;
-    background:linear-gradient(135deg,rgba(27,58,92,.07),rgba(200,16,46,.06));
-    border:1.5px solid rgba(27,58,92,.15);
-    border-radius:8px;padding:.85rem 1.1rem;margin-top:1rem;
+  /* ── Add Stop button ── */
+  .add-stop-btn{
+    display:flex;align-items:center;justify-content:center;gap:.5rem;
+    width:100%;padding:.7rem;
+    font-size:.92rem;font-weight:600;font-family:inherit;
+    color:var(--blue);background:transparent;
+    border:2px dashed var(--border);border-radius:8px;
+    cursor:pointer;transition:all .2s;margin-bottom:1.25rem;
   }
-  .reimb-box.show{display:flex}
-  .reimb-box .rlabel{font-size:.82rem;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:.05em}
-  .reimb-box .amount{font-size:1.4rem;font-weight:700;color:var(--red);font-variant-numeric:tabular-nums}
-  .reimb-box .rate-note{font-size:.72rem;color:var(--gray);margin-top:.1rem}
+  .add-stop-btn:hover{border-color:var(--blue);background:rgba(27,58,92,.04)}
+
+  /* ── Totals box ── */
+  .totals-box{
+    display:none;
+    background:linear-gradient(135deg,rgba(27,58,92,.07),rgba(200,16,46,.05));
+    border:1.5px solid rgba(27,58,92,.18);
+    border-radius:8px;padding:1rem 1.1rem;margin-bottom:1rem;
+  }
+  .totals-box.show{display:block}
+  .totals-box .totals-title{
+    font-size:.75rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.06em;color:var(--blue);margin-bottom:.6rem;
+  }
+  .totals-grid{display:flex;gap:1.5rem;flex-wrap:wrap}
+  .totals-item .tl{font-size:.72rem;color:var(--gray);font-weight:500}
+  .totals-item .tv{font-size:1.25rem;font-weight:700;color:var(--red);font-variant-numeric:tabular-nums}
+  .totals-item .tv.blue{color:var(--blue)}
 
   /* ── Submit button ── */
   .btn{
     display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
-    width:100%;padding:.9rem;margin-top:1.25rem;
+    width:100%;padding:.9rem;margin-top:.25rem;
     font-size:1rem;font-weight:600;font-family:inherit;
     color:var(--white);background:var(--red);
-    border:none;border-radius:6px;cursor:pointer;
-    transition:background .2s,transform .1s;
+    border:none;border-radius:6px;cursor:pointer;transition:background .2s,transform .1s;
   }
   .btn:hover{background:var(--red-dark)}
   .btn:active{transform:scale(.98)}
@@ -212,7 +217,6 @@
   }
   .btn.loading .spinner{display:block}
   .btn.loading .btn-text{display:none}
-
   @keyframes spin{to{transform:rotate(360deg)}}
 
   /* ── Overlay ── */
@@ -220,8 +224,7 @@
     position:absolute;inset:0;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     background:rgba(255,255,255,.97);border-radius:var(--radius);
-    opacity:0;pointer-events:none;transition:opacity .35s;
-    padding:2rem;text-align:center;
+    opacity:0;pointer-events:none;transition:opacity .35s;padding:2rem;text-align:center;
   }
   .overlay.visible{opacity:1;pointer-events:auto}
   .overlay .icon{
@@ -234,12 +237,8 @@
   .overlay .icon svg{width:32px;height:32px}
   .overlay h3{font-size:1.2rem;margin-bottom:.35rem}
   .overlay p{color:var(--gray);font-size:.9rem;max-width:360px}
-  .overlay .btn-reset{
-    margin-top:1.25rem;padding:.55rem 1.5rem;
-    font-size:.88rem;width:auto;background:var(--blue);
-  }
+  .overlay .btn-reset{margin-top:1.25rem;padding:.55rem 1.5rem;font-size:.88rem;width:auto;background:var(--blue)}
   .overlay .btn-reset:hover{background:var(--blue-light)}
-
   @keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
 
   .footer{text-align:center;padding:1.5rem 1rem;font-size:.78rem;color:var(--gray);margin-top:auto}
@@ -251,14 +250,14 @@
     .card{margin:.5rem .5rem 1rem;padding:1.25rem 1rem 1.75rem}
     .card h2{margin:-1.25rem -1rem 1.25rem;padding:.9rem 1rem;font-size:.95rem}
     .row{flex-direction:column;gap:0}
-    #map{height:210px}
+    .leaflet-map{height:185px !important}
     .btn,.route-btn{padding:1rem}
     .footer{font-size:.72rem;padding:1rem .75rem}
   }
   @media(max-width:380px){
     .logo-bar img{max-width:220px}
     .card{margin:.25rem .25rem .75rem;padding:1rem .85rem 1.5rem}
-    #map{height:180px}
+    .leaflet-map{height:160px !important}
   }
 </style>
 </head>
@@ -285,13 +284,13 @@
       <div class="program-error" id="err-program">Please select a program.</div>
     </div>
 
-    <!-- Trip details -->
-    <div class="section-label">Trip Details</div>
+    <!-- Date & Staff -->
+    <div class="section-label">Staff Details</div>
     <div class="row">
       <div class="field">
-        <label for="tripDate">Date of Trip <span class="req">*</span></label>
+        <label for="tripDate">Date <span class="req">*</span></label>
         <input type="date" id="tripDate" name="tripDate" required>
-        <div class="error-msg" id="err-tripDate">Please select the trip date.</div>
+        <div class="error-msg" id="err-tripDate">Please select the date.</div>
       </div>
       <div class="field">
         <label for="staffName">Staff Name <span class="req">*</span></label>
@@ -300,58 +299,44 @@
       </div>
     </div>
 
-    <!-- Route & Map -->
-    <div class="section-label">Route</div>
+    <!-- Trips -->
+    <div class="section-label">Trips</div>
+    <div id="tripList"></div>
 
-    <div class="field">
-      <label for="startAddress">Starting Address <span class="req">*</span></label>
-      <input type="text" id="startAddress" name="startAddress"
-        placeholder="123 Main St, San Francisco, CA" required autocomplete="street-address">
-      <div class="error-msg" id="err-startAddress">Please enter the starting address.</div>
-    </div>
-
-    <div class="field">
-      <label for="destAddress">Destination Address <span class="req">*</span></label>
-      <input type="text" id="destAddress" name="destAddress"
-        placeholder="456 Market St, San Francisco, CA" required autocomplete="off">
-      <div class="error-msg" id="err-destAddress">Please enter the destination address.</div>
-    </div>
-
-    <button type="button" class="route-btn" id="routeBtn" onclick="calculateRoute()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8l4 4-4 4M8 12h8"/></svg>
-      <span class="btn-text">Get Driving Distance &amp; Map</span>
-      <span class="spinner"></span>
+    <button type="button" class="add-stop-btn" id="addStopBtn" onclick="addTrip()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Another Stop
     </button>
 
-    <div class="route-error" id="routeError"></div>
-
-    <!-- Map -->
-    <div id="mapWrap"><div id="map"></div></div>
-
-    <!-- Miles result -->
-    <div class="miles-result" id="milesResult"></div>
-
-    <!-- Hidden fields populated by route calculation -->
-    <input type="hidden" id="totalMiles" name="totalMiles">
-    <input type="hidden" id="drivingDuration" name="drivingDuration">
-
-    <!-- Reimbursement -->
-    <div class="reimb-box" id="reimbBox">
-      <div>
-        <div class="rlabel">Estimated Reimbursement</div>
-        <div class="rate-note">@ $0.72 per mile</div>
+    <!-- Totals -->
+    <div class="totals-box" id="totalsBox">
+      <div class="totals-title">Day Total</div>
+      <div class="totals-grid">
+        <div class="totals-item">
+          <div class="tl">Total Miles</div>
+          <div class="tv blue" id="totalMilesDisplay">0.00</div>
+        </div>
+        <div class="totals-item">
+          <div class="tl">Estimated Reimbursement</div>
+          <div class="tv" id="totalReimbDisplay">$0.00</div>
+        </div>
+        <div class="totals-item">
+          <div class="tl">Rate</div>
+          <div class="tv" style="font-size:.95rem;color:var(--gray)">$0.72 / mile</div>
+        </div>
       </div>
-      <div class="amount" id="reimbAmount">$0.00</div>
     </div>
 
     <!-- Purpose -->
     <div class="section-label">Purpose</div>
     <div class="field">
-      <label for="tripPurpose">Purpose of Trip <span class="req">*</span></label>
+      <label for="tripPurpose">Purpose of Trip(s) <span class="req">*</span></label>
       <textarea id="tripPurpose" name="tripPurpose"
-        placeholder="Describe the reason for this trip (e.g. Client transport to medical appointment, supply pickup, site visit...)" required></textarea>
+        placeholder="Describe the reason for today's trips (e.g. Client transport, supply pickup, site visits...)" required></textarea>
       <div class="error-msg" id="err-tripPurpose">Please describe the purpose of the trip.</div>
     </div>
+
+    <div class="error-msg show" id="err-noRoute" style="display:none;margin-bottom:.5rem;font-size:.82rem"></div>
 
     <button type="submit" class="btn" id="submitBtn">
       <span class="btn-text">Submit Trip Log</span>
@@ -365,8 +350,8 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
     <h3>Trip Logged</h3>
-    <p id="successMsg">Your trip has been recorded and sent to the spreadsheet.</p>
-    <button class="btn btn-reset" onclick="resetForm()">Log Another Trip</button>
+    <p id="successMsg">Your trips have been recorded.</p>
+    <button class="btn btn-reset" onclick="resetForm()">Log Another Day</button>
   </div>
 
   <!-- Error overlay -->
@@ -375,13 +360,14 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </div>
     <h3>Submission Failed</h3>
-    <p id="errorMsg">Something went wrong. Please try again or contact support.</p>
+    <p id="errorMsg">Something went wrong. Please try again.</p>
     <button class="btn btn-reset" onclick="hideOverlays()">Try Again</button>
   </div>
 </main>
 
 <footer class="footer">
-  &copy; 2026 The Way Out SF &mdash; The Salvation Army &nbsp;|&nbsp; Map data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" style="color:inherit">OpenStreetMap</a> contributors
+  &copy; 2026 The Way Out SF &mdash; The Salvation Army &nbsp;|&nbsp;
+  Map data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" style="color:inherit">OpenStreetMap</a> contributors
 </footer>
 
 <script>
@@ -390,50 +376,138 @@ const FLOW_URLS = {
   'Hope House':  'PASTE_HOPE_HOUSE_FLOW_URL_HERE',
   'Wells Place': 'PASTE_WELLS_PLACE_FLOW_URL_HERE',
 };
-const RATE_PER_MILE = 0.72;
+const RATE = 0.72;
 // ────────────────────────────────────────────────────────────
 
-const form   = document.getElementById('travelForm');
-const btn    = document.getElementById('submitBtn');
-let map = null, routeLayer = null;
+const form = document.getElementById('travelForm');
+const btn  = document.getElementById('submitBtn');
 
-// Default date to today
+let tripCounter = 0;
+const maps      = {};   // maps[id] = Leaflet map instance
+const layers    = {};   // layers[id] = Leaflet layer group
+const milesData = {};   // milesData[id] = { miles, duration }
+
+// Set default date
 document.getElementById('tripDate').valueAsDate = new Date();
 
-// ── Geocode address → {lat, lng} using Nominatim ──
-async function geocode(address) {
-  const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q='
-    + encodeURIComponent(address);
-  const res = await fetch(url, { headers: { 'Accept-Language': 'en-US,en' } });
-  const data = await res.json();
-  if (!data.length) throw new Error('Address not found: "' + address + '"');
-  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), display: data[0].display_name };
+// Start with one trip
+addTrip();
+
+// ── Add a trip card ──
+function addTrip() {
+  if (Object.keys(milesData).length >= 10) return; // reasonable max
+  tripCounter++;
+  const id = tripCounter;
+  const allTrips = document.querySelectorAll('.trip-card');
+  const num = allTrips.length + 1;
+
+  const card = document.createElement('div');
+  card.className = 'trip-card';
+  card.id = 'trip-' + id;
+  card.dataset.id = id;
+  card.innerHTML = `
+    <div class="trip-header">
+      <span class="trip-num">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+        Trip ${num}
+      </span>
+      <button type="button" class="remove-btn" id="removebtn-${id}" onclick="removeTrip(${id})">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Remove
+      </button>
+    </div>
+    <div class="field">
+      <label for="start-${id}">Starting Address <span class="req">*</span></label>
+      <input type="text" id="start-${id}" placeholder="123 Main St, San Francisco, CA" autocomplete="street-address">
+      <div class="error-msg" id="err-start-${id}">Please enter the starting address.</div>
+    </div>
+    <div class="field">
+      <label for="dest-${id}">Destination Address <span class="req">*</span></label>
+      <input type="text" id="dest-${id}" placeholder="456 Market St, San Francisco, CA" autocomplete="off">
+      <div class="error-msg" id="err-dest-${id}">Please enter the destination address.</div>
+    </div>
+    <button type="button" class="route-btn" id="routebtn-${id}" onclick="calculateRoute(${id})">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M13 6l6 6-6 6"/></svg>
+      <span class="btn-text">Get Driving Distance &amp; Map</span>
+      <span class="spinner"></span>
+    </button>
+    <div class="route-err" id="routeErr-${id}"></div>
+    <div class="map-wrap" id="mapWrap-${id}">
+      <div id="map-${id}" class="leaflet-map"></div>
+    </div>
+    <div class="miles-pill" id="milesPill-${id}"></div>
+  `;
+
+  document.getElementById('tripList').appendChild(card);
+  updateRemoveButtons();
+
+  // Clear input errors on typing
+  card.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const errEl = document.getElementById('err-' + inp.id);
+      if (errEl) { errEl.classList.remove('show'); inp.classList.remove('invalid'); }
+    });
+  });
 }
 
-// ── Get driving route from OSRM ──
-async function getRoute(start, end) {
-  const url = 'https://router.project-osrm.org/route/v1/driving/'
-    + start.lng + ',' + start.lat + ';'
-    + end.lng   + ',' + end.lat
-    + '?overview=full&geometries=geojson';
-  const res  = await fetch(url);
+// ── Remove a trip card ──
+function removeTrip(id) {
+  const card = document.getElementById('trip-' + id);
+  if (!card) return;
+  if (maps[id]) { maps[id].remove(); delete maps[id]; }
+  if (layers[id]) delete layers[id];
+  delete milesData[id];
+  card.remove();
+  renumberTrips();
+  updateRemoveButtons();
+  updateTotals();
+}
+
+// ── Renumber trip headers after removal ──
+function renumberTrips() {
+  document.querySelectorAll('.trip-card').forEach((card, i) => {
+    const numEl = card.querySelector('.trip-num');
+    if (numEl) numEl.lastChild.textContent = ' Trip ' + (i + 1);
+  });
+}
+
+// ── Show/hide remove buttons (hide when only 1 trip) ──
+function updateRemoveButtons() {
+  const cards = document.querySelectorAll('.trip-card');
+  cards.forEach(card => {
+    const btn = card.querySelector('.remove-btn');
+    if (btn) btn.style.display = cards.length === 1 ? 'none' : 'inline-flex';
+  });
+}
+
+// ── Geocode via Nominatim ──
+async function geocode(address) {
+  const res  = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(address), { headers:{'Accept-Language':'en-US,en'} });
+  const data = await res.json();
+  if (!data.length) throw new Error('Address not found: "' + address + '"');
+  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+}
+
+// ── Route via OSRM ──
+async function getRoute(s, e) {
+  const res  = await fetch('https://router.project-osrm.org/route/v1/driving/' + s.lng + ',' + s.lat + ';' + e.lng + ',' + e.lat + '?overview=full&geometries=geojson');
   const data = await res.json();
   if (data.code !== 'Ok' || !data.routes.length) throw new Error('Could not calculate driving route.');
   return data.routes[0];
 }
 
-// ── Calculate route and draw map ──
-async function calculateRoute() {
-  const startVal = document.getElementById('startAddress').value.trim();
-  const destVal  = document.getElementById('destAddress').value.trim();
-  const routeErr = document.getElementById('routeError');
-  const routeBtn = document.getElementById('routeBtn');
+// ── Calculate route for one trip card ──
+async function calculateRoute(id) {
+  const startVal = (document.getElementById('start-' + id) || {}).value?.trim();
+  const destVal  = (document.getElementById('dest-'  + id) || {}).value?.trim();
+  const errEl    = document.getElementById('routeErr-' + id);
+  const routeBtn = document.getElementById('routebtn-' + id);
 
-  routeErr.classList.remove('show');
+  errEl.classList.remove('show');
 
   if (!startVal || !destVal) {
-    routeErr.textContent = 'Please enter both a starting and destination address first.';
-    routeErr.classList.add('show');
+    errEl.textContent = 'Enter both addresses first.';
+    errEl.classList.add('show');
     return;
   }
 
@@ -441,97 +515,84 @@ async function calculateRoute() {
   routeBtn.disabled = true;
 
   try {
-    // Geocode both addresses
-    const [startCoord, endCoord] = await Promise.all([geocode(startVal), geocode(destVal)]);
+    const [sc, ec] = await Promise.all([geocode(startVal), geocode(destVal)]);
+    const route    = await getRoute(sc, ec);
 
-    // Get route
-    const route = await getRoute(startCoord, endCoord);
+    const miles = (route.distance * 0.000621371).toFixed(2);
+    const mins  = Math.round(route.duration / 60);
+    const hrs   = Math.floor(mins / 60);
+    const durStr = hrs > 0 ? hrs + ' hr ' + (mins % 60) + ' min' : mins + ' min';
 
-    // Miles & duration
-    const miles    = (route.distance * 0.000621371).toFixed(2);
-    const totalSec = route.duration;
-    const mins     = Math.round(totalSec / 60);
-    const hrs      = Math.floor(mins / 60);
-    const remMins  = mins % 60;
-    const durationStr = hrs > 0 ? hrs + ' hr ' + remMins + ' min' : remMins + ' min';
+    milesData[id] = { miles: parseFloat(miles), duration: durStr, start: startVal, dest: destVal };
 
-    document.getElementById('totalMiles').value    = miles;
-    document.getElementById('drivingDuration').value = durationStr;
+    // Miles pill
+    const pill = document.getElementById('milesPill-' + id);
+    pill.innerHTML = '<strong>' + miles + ' miles</strong> &nbsp;·&nbsp; ~' + durStr + ' driving';
+    pill.classList.add('show');
 
-    // Show miles result
-    const milesEl = document.getElementById('milesResult');
-    milesEl.innerHTML =
-      '<strong>' + miles + ' miles</strong> &nbsp;·&nbsp; ~' + durationStr + ' driving';
-    milesEl.style.display = 'block';
-
-    // Reimbursement
-    const reimb = (miles * RATE_PER_MILE).toFixed(2);
-    document.getElementById('reimbAmount').textContent = '$' + reimb;
-    document.getElementById('reimbBox').classList.add('show');
-
-    // Draw map
-    const mapWrap = document.getElementById('mapWrap');
+    // Map
+    const mapWrap = document.getElementById('mapWrap-' + id);
     mapWrap.style.display = 'block';
 
-    if (!map) {
-      map = L.map('map', { zoomControl: true, scrollWheelZoom: false });
+    if (!maps[id]) {
+      maps[id] = L.map('map-' + id, { zoomControl: true, scrollWheelZoom: false });
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19,
-      }).addTo(map);
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19
+      }).addTo(maps[id]);
     }
+    if (layers[id]) { maps[id].removeLayer(layers[id]); }
+    layers[id] = L.layerGroup().addTo(maps[id]);
 
-    // Remove old route layer
-    if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
-
-    // Draw route polyline
     const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
-    routeLayer = L.layerGroup().addTo(map);
+    L.polyline(coords, { color: '#C8102E', weight: 4, opacity: 0.85 }).addTo(layers[id]);
 
-    L.polyline(coords, { color: '#C8102E', weight: 4, opacity: 0.85 }).addTo(routeLayer);
+    const mkStart = L.divIcon({ className:'', html:'<div style="background:#059669;width:13px;height:13px;border-radius:50%;border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>', iconSize:[13,13], iconAnchor:[6,6] });
+    const mkEnd   = L.divIcon({ className:'', html:'<div style="background:#C8102E;width:13px;height:13px;border-radius:50%;border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>', iconSize:[13,13], iconAnchor:[6,6] });
+    L.marker([sc.lat, sc.lng], { icon: mkStart }).bindPopup('<b>Start</b><br>' + startVal).addTo(layers[id]);
+    L.marker([ec.lat, ec.lng], { icon: mkEnd   }).bindPopup('<b>Destination</b><br>' + destVal).addTo(layers[id]);
 
-    // Start marker (green)
-    const startIcon = L.divIcon({
-      className: '',
-      html: '<div style="background:#059669;width:14px;height:14px;border-radius:50%;border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
-      iconSize: [14, 14], iconAnchor: [7, 7],
-    });
-    // End marker (red)
-    const endIcon = L.divIcon({
-      className: '',
-      html: '<div style="background:#C8102E;width:14px;height:14px;border-radius:50%;border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
-      iconSize: [14, 14], iconAnchor: [7, 7],
-    });
+    maps[id].fitBounds(L.polyline(coords).getBounds(), { padding: [20, 20] });
+    setTimeout(() => maps[id].invalidateSize(), 120);
 
-    L.marker([startCoord.lat, startCoord.lng], { icon: startIcon })
-      .bindPopup('<b>Start</b><br>' + startVal).addTo(routeLayer);
-    L.marker([endCoord.lat,   endCoord.lng],   { icon: endIcon })
-      .bindPopup('<b>Destination</b><br>' + destVal).addTo(routeLayer);
-
-    // Fit map to route
-    map.fitBounds(L.polyline(coords).getBounds(), { padding: [24, 24] });
-
-    // Leaflet needs a size hint after becoming visible
-    setTimeout(() => map.invalidateSize(), 100);
+    updateTotals();
 
   } catch (err) {
-    routeErr.textContent = err.message || 'Could not calculate route. Check the addresses and try again.';
-    routeErr.classList.add('show');
+    errEl.textContent = err.message || 'Could not calculate route. Check the addresses and try again.';
+    errEl.classList.add('show');
   } finally {
     routeBtn.classList.remove('loading');
     routeBtn.disabled = false;
   }
 }
 
-// ── Validation ──
-function showErr(id, show) {
+// ── Update total miles & reimbursement ──
+function updateTotals() {
+  const ids    = Object.keys(milesData);
+  const total  = ids.reduce((sum, id) => sum + milesData[id].miles, 0);
+  const reimb  = (total * RATE).toFixed(2);
+  const box    = document.getElementById('totalsBox');
+
+  if (ids.length > 0) {
+    document.getElementById('totalMilesDisplay').textContent = total.toFixed(2);
+    document.getElementById('totalReimbDisplay').textContent = '$' + reimb;
+    box.classList.add('show');
+  } else {
+    box.classList.remove('show');
+  }
+}
+
+// ── Field error helpers ──
+function showErr(id, show, msg) {
   const el  = document.getElementById('err-' + id);
   const inp = document.getElementById(id);
   if (!el || !inp) return;
+  if (msg) el.textContent = msg;
   el.classList.toggle('show', show);
   inp.classList.toggle('invalid', show);
 }
 
+// ── Validate all ──
 function validate() {
   let ok = true;
 
@@ -541,30 +602,43 @@ function validate() {
   if (!program) { progErr.classList.add('show'); ok = false; }
   else           { progErr.classList.remove('show'); }
 
-  // Required fields
-  ['tripDate','staffName','startAddress','destAddress','tripPurpose'].forEach(id => {
+  // Date & name
+  ['tripDate','staffName'].forEach(id => {
     const empty = !document.getElementById(id).value.trim();
     showErr(id, empty);
     if (empty) ok = false;
   });
 
-  // Route must have been calculated
-  if (!document.getElementById('totalMiles').value) {
-    const routeErr = document.getElementById('routeError');
-    routeErr.textContent = 'Please click "Get Driving Distance & Map" before submitting.';
-    routeErr.classList.add('show');
-    ok = false;
-  }
+  // Each trip card
+  document.querySelectorAll('.trip-card').forEach(card => {
+    const id      = card.dataset.id;
+    const startEl = document.getElementById('start-' + id);
+    const destEl  = document.getElementById('dest-'  + id);
+
+    const noStart = !startEl.value.trim();
+    const noDest  = !destEl.value.trim();
+    const errS    = document.getElementById('err-start-' + id);
+    const errD    = document.getElementById('err-dest-'  + id);
+
+    if (noStart) { startEl.classList.add('invalid'); errS.classList.add('show'); ok = false; }
+    if (noDest)  { destEl.classList.add('invalid');  errD.classList.add('show'); ok = false; }
+
+    // Must have calculated route
+    if (!milesData[id] && !noStart && !noDest) {
+      const re = document.getElementById('routeErr-' + id);
+      re.textContent = 'Please calculate the route before submitting.';
+      re.classList.add('show');
+      ok = false;
+    }
+  });
+
+  // Purpose
+  const purposeEmpty = !document.getElementById('tripPurpose').value.trim();
+  showErr('tripPurpose', purposeEmpty);
+  if (purposeEmpty) ok = false;
 
   return ok;
 }
-
-form.querySelectorAll('input:not([type="hidden"]):not([type="radio"]), textarea').forEach(el => {
-  el.addEventListener('input', () => showErr(el.id, false));
-});
-document.querySelectorAll('input[name="program"]').forEach(r => {
-  r.addEventListener('change', () => document.getElementById('err-program').classList.remove('show'));
-});
 
 // ── Submit ──
 form.addEventListener('submit', async (e) => {
@@ -584,23 +658,36 @@ form.addEventListener('submit', async (e) => {
   btn.classList.add('loading');
   btn.disabled = true;
 
-  const miles = parseFloat(document.getElementById('totalMiles').value) || 0;
+  // Build trips array
+  const trips = document.querySelectorAll('.trip-card');
+  const tripList = Array.from(trips).map((card, i) => {
+    const id = card.dataset.id;
+    const d  = milesData[id] || {};
+    return {
+      tripNumber:         i + 1,
+      startingAddress:    (document.getElementById('start-' + id) || {}).value?.trim() || '',
+      destinationAddress: (document.getElementById('dest-'  + id) || {}).value?.trim() || '',
+      miles:              d.miles || 0,
+      duration:           d.duration || '',
+    };
+  });
+
+  const totalMiles = tripList.reduce((s, t) => s + t.miles, 0);
+  const totalReim  = (totalMiles * RATE).toFixed(2);
 
   const payload = {
-    program:                program,
+    program,
     tripDate:               document.getElementById('tripDate').value,
     staffName:              document.getElementById('staffName').value.trim(),
-    startingAddress:        document.getElementById('startAddress').value.trim(),
-    destinationAddress:     document.getElementById('destAddress').value.trim(),
-    totalMiles:             miles,
-    drivingDuration:        document.getElementById('drivingDuration').value,
-    estimatedReimbursement: (miles * RATE_PER_MILE).toFixed(2),
+    trips,
+    totalMiles:             parseFloat(totalMiles.toFixed(2)),
+    estimatedReimbursement: totalReim,
     purposeOfTrip:          document.getElementById('tripPurpose').value.trim(),
     submittedAt:            new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }),
   };
 
   try {
-    await new Promise((resolve) => {
+    await new Promise(resolve => {
       const xhr = new XMLHttpRequest();
       xhr.open('POST', flowUrl, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
@@ -610,12 +697,11 @@ form.addEventListener('submit', async (e) => {
       xhr.send(JSON.stringify(payload));
     });
     document.getElementById('successMsg').textContent =
-      'Your ' + miles + '-mile trip for ' + program + ' has been recorded. Estimated reimbursement: $' +
-      (miles * RATE_PER_MILE).toFixed(2) + '.';
+      trips.length + ' trip' + (trips.length > 1 ? 's' : '') + ' logged for ' + program +
+      ' — ' + totalMiles.toFixed(2) + ' total miles. Estimated reimbursement: $' + totalReim + '.';
     showOverlay('successOverlay');
-  } catch (err) {
-    document.getElementById('errorMsg').textContent =
-      'Network error — please check your connection and try again.';
+  } catch {
+    document.getElementById('errorMsg').textContent = 'Network error — check your connection and try again.';
     showOverlay('errorOverlay');
   } finally {
     btn.classList.remove('loading');
@@ -623,19 +709,25 @@ form.addEventListener('submit', async (e) => {
   }
 });
 
-function showOverlay(id){ document.getElementById(id).classList.add('visible') }
-function hideOverlays(){ document.querySelectorAll('.overlay').forEach(o => o.classList.remove('visible')) }
-function resetForm(){
+function showOverlay(id) { document.getElementById(id).classList.add('visible'); }
+function hideOverlays()  { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('visible')); }
+
+function resetForm() {
   hideOverlays();
   form.reset();
   document.getElementById('tripDate').valueAsDate = new Date();
-  document.getElementById('totalMiles').value = '';
-  document.getElementById('drivingDuration').value = '';
-  document.getElementById('milesResult').style.display = 'none';
-  document.getElementById('reimbBox').classList.remove('show');
-  document.getElementById('mapWrap').style.display = 'none';
-  document.getElementById('routeError').classList.remove('show');
-  if (routeLayer && map) { map.removeLayer(routeLayer); routeLayer = null; }
+
+  // Destroy all maps
+  Object.keys(maps).forEach(id => { if (maps[id]) maps[id].remove(); });
+  Object.keys(maps).forEach(id => delete maps[id]);
+  Object.keys(layers).forEach(id => delete layers[id]);
+  Object.keys(milesData).forEach(id => delete milesData[id]);
+
+  // Clear trip list and add one fresh
+  document.getElementById('tripList').innerHTML = '';
+  tripCounter = 0;
+  document.getElementById('totalsBox').classList.remove('show');
+  addTrip();
 }
 </script>
 </body>
