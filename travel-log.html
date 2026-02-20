@@ -342,14 +342,6 @@
           <div class="tl">Total Miles</div>
           <div class="tv blue" id="totalMilesDisplay">0.00</div>
         </div>
-        <div class="totals-item">
-          <div class="tl">Estimated Reimbursement</div>
-          <div class="tv" id="totalReimbDisplay">$0.00</div>
-        </div>
-        <div class="totals-item">
-          <div class="tl">Federal Rate</div>
-          <div class="tv" style="font-size:.95rem;color:var(--gray)" id="rateBadge">$0.70/mi</div>
-        </div>
       </div>
     </div>
 
@@ -425,30 +417,7 @@ const FLOW_URLS = {
   'Hope House':  'PASTE_HOPE_HOUSE_FLOW_URL_HERE',
   'Wells Place': 'PASTE_WELLS_PLACE_FLOW_URL_HERE',
 };
-let RATE = 0.70; // fallback — overwritten by rate.json on load
 // ────────────────────────────────────────────────────────────
-
-// ── Load current mileage rate from rate.json ──
-(async () => {
-  try {
-    const res  = await fetch('rate.json?nocache=' + Date.now());
-    const data = await res.json();
-    if (data.mileageRate) {
-      RATE = parseFloat(data.mileageRate);
-      const badge = document.getElementById('rateBadge');
-      if (badge) {
-        badge.textContent = '$' + RATE.toFixed(2) + '/mi';
-        if (data.effectiveDate) {
-          badge.title = 'Effective ' + data.effectiveDate + (data.source ? ' · ' + data.source : '');
-        }
-      }
-      // Refresh any already-calculated totals with new rate
-      updateTotals();
-    }
-  } catch (e) {
-    // silently use fallback rate
-  }
-})();
 
 const form = document.getElementById('travelForm');
 const btn  = document.getElementById('submitBtn');
@@ -647,18 +616,14 @@ async function calculateRoute(id) {
   }
 }
 
-// ── Update total miles & reimbursement ──
+// ── Update total miles ──
 function updateTotals() {
-  const ids    = Object.keys(milesData);
-  const total  = ids.reduce((sum, id) => sum + milesData[id].miles, 0);
-  const reimb  = (total * RATE).toFixed(2);
-  const box    = document.getElementById('totalsBox');
+  const ids   = Object.keys(milesData);
+  const total = ids.reduce((sum, id) => sum + milesData[id].miles, 0);
+  const box   = document.getElementById('totalsBox');
 
   if (ids.length > 0) {
     document.getElementById('totalMilesDisplay').textContent = total.toFixed(2);
-    document.getElementById('totalReimbDisplay').textContent = '$' + reimb;
-    const badge = document.getElementById('rateBadge');
-    if (badge) badge.textContent = '$' + RATE.toFixed(2) + '/mi';
     box.classList.add('show');
   } else {
     box.classList.remove('show');
@@ -832,7 +797,6 @@ form.addEventListener('submit', async (e) => {
   });
 
   const totalMiles = tripList.reduce((s, t) => s + t.miles, 0);
-  const totalReim  = (totalMiles * RATE).toFixed(2);
   const tripDate   = document.getElementById('tripDate').value;
   const staffName  = document.getElementById('staffName').value.trim();
   const purpose    = document.getElementById('tripPurpose').value.trim();
@@ -855,7 +819,6 @@ form.addEventListener('submit', async (e) => {
       staffName,
       trips:                  progTrips,
       totalMiles:             parseFloat(progMiles.toFixed(2)),
-      estimatedReimbursement: (progMiles * RATE).toFixed(2),
       purposeOfTrip:          purpose,
       vehicleIssues:          document.getElementById('vehicleIssues').value.trim() || 'None reported',
       receipts:               receiptImages.filter(Boolean).map(r => ({ name: r.name, data: r.base64 })),
@@ -877,7 +840,7 @@ form.addEventListener('submit', async (e) => {
     const programs = [...new Set(tripList.map(t => t.program))].join(' & ');
     document.getElementById('successMsg').textContent =
       tripList.length + ' trip' + (tripList.length > 1 ? 's' : '') + ' logged for ' + programs +
-      ' — ' + totalMiles.toFixed(2) + ' total miles. Estimated reimbursement: $' + totalReim + '.';
+      ' — ' + totalMiles.toFixed(2) + ' total miles recorded.';
     showOverlay('successOverlay');
   } catch {
     document.getElementById('errorMsg').textContent = 'Network error — check your connection and try again.';
