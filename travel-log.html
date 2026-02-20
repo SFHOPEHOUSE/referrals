@@ -249,7 +249,15 @@
     .logo-bar img{max-width:260px}
     .card{margin:.5rem .5rem 1rem;padding:1.25rem 1rem 1.75rem}
     .card h2{margin:-1.25rem -1rem 1.25rem;padding:.9rem 1rem;font-size:.95rem}
-    .row{flex-direction:column;gap:0}
+
+    /* Keep date + staff name side by side, smaller */
+    .row{display:flex;flex-direction:row;gap:.5rem}
+    .row input{padding:.5rem .55rem;font-size:.92rem}
+    .row label{font-size:.78rem}
+
+    /* Compact all inputs on mobile */
+    input,textarea{padding:.55rem .7rem;font-size:1rem}
+
     .leaflet-map{height:185px !important}
     .btn,.route-btn{padding:1rem}
     .footer{font-size:.72rem;padding:1rem .75rem}
@@ -257,6 +265,8 @@
   @media(max-width:380px){
     .logo-bar img{max-width:220px}
     .card{margin:.25rem .25rem .75rem;padding:1rem .85rem 1.5rem}
+    .row{gap:.35rem}
+    .row input{font-size:.85rem;padding:.45rem .45rem}
     .leaflet-map{height:160px !important}
   }
 </style>
