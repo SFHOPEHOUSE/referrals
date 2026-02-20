@@ -347,8 +347,8 @@
           <div class="tv" id="totalReimbDisplay">$0.00</div>
         </div>
         <div class="totals-item">
-          <div class="tl">Rate</div>
-          <div class="tv" style="font-size:.95rem;color:var(--gray)">$0.72 / mile</div>
+          <div class="tl">Federal Rate</div>
+          <div class="tv" style="font-size:.95rem;color:var(--gray)" id="rateBadge">$0.70/mi</div>
         </div>
       </div>
     </div>
@@ -425,8 +425,30 @@ const FLOW_URLS = {
   'Hope House':  'PASTE_HOPE_HOUSE_FLOW_URL_HERE',
   'Wells Place': 'PASTE_WELLS_PLACE_FLOW_URL_HERE',
 };
-const RATE = 0.72;
+let RATE = 0.70; // fallback — overwritten by rate.json on load
 // ────────────────────────────────────────────────────────────
+
+// ── Load current mileage rate from rate.json ──
+(async () => {
+  try {
+    const res  = await fetch('rate.json?nocache=' + Date.now());
+    const data = await res.json();
+    if (data.mileageRate) {
+      RATE = parseFloat(data.mileageRate);
+      const badge = document.getElementById('rateBadge');
+      if (badge) {
+        badge.textContent = '$' + RATE.toFixed(2) + '/mi';
+        if (data.effectiveDate) {
+          badge.title = 'Effective ' + data.effectiveDate + (data.source ? ' · ' + data.source : '');
+        }
+      }
+      // Refresh any already-calculated totals with new rate
+      updateTotals();
+    }
+  } catch (e) {
+    // silently use fallback rate
+  }
+})();
 
 const form = document.getElementById('travelForm');
 const btn  = document.getElementById('submitBtn');
@@ -635,6 +657,8 @@ function updateTotals() {
   if (ids.length > 0) {
     document.getElementById('totalMilesDisplay').textContent = total.toFixed(2);
     document.getElementById('totalReimbDisplay').textContent = '$' + reimb;
+    const badge = document.getElementById('rateBadge');
+    if (badge) badge.textContent = '$' + RATE.toFixed(2) + '/mi';
     box.classList.add('show');
   } else {
     box.classList.remove('show');
