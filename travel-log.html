@@ -55,22 +55,22 @@
     text-shadow:0 1px 3px rgba(0,0,0,.25);border-bottom:3px solid var(--red-dark);
   }
 
-  /* ── Program Toggle ── */
-  .program-toggle{display:flex;gap:.6rem;margin-bottom:1.5rem}
+  /* ── Program Toggle (inside trip card) ── */
+  .program-toggle{display:flex;gap:.5rem;margin-bottom:.9rem}
   .program-toggle input[type="radio"]{display:none}
   .program-toggle label{
-    flex:1;text-align:center;padding:.75rem .5rem;
-    border:2px solid var(--border);border-radius:8px;
-    cursor:pointer;font-size:.92rem;font-weight:600;
+    flex:1;text-align:center;padding:.55rem .5rem;
+    border:2px solid var(--border);border-radius:7px;
+    cursor:pointer;font-size:.82rem;font-weight:600;
     color:var(--gray);background:var(--white);transition:all .2s;user-select:none;
   }
   .program-toggle input:checked + label{
-    border-color:var(--red);background:var(--red);color:var(--white);
-    box-shadow:0 2px 8px rgba(200,16,46,.25);
+    border-color:var(--blue);background:var(--blue);color:var(--white);
+    box-shadow:0 2px 6px rgba(27,58,92,.2);
   }
-  .program-toggle label:hover{border-color:var(--red);color:var(--red)}
+  .program-toggle label:hover{border-color:var(--blue);color:var(--blue)}
   .program-toggle input:checked + label:hover{color:var(--white)}
-  .program-error{color:var(--red);font-size:.78rem;margin-top:-.9rem;margin-bottom:.9rem;display:none}
+  .program-error{color:var(--red);font-size:.78rem;margin-top:-.5rem;margin-bottom:.7rem;display:none}
   .program-error.show{display:block}
 
   /* ── Section label ── */
@@ -272,18 +272,6 @@
 
   <form id="travelForm" novalidate>
 
-    <!-- Program -->
-    <div class="field">
-      <label>Program <span class="req">*</span></label>
-      <div class="program-toggle">
-        <input type="radio" name="program" id="prog-hope" value="Hope House">
-        <label for="prog-hope">Hope House</label>
-        <input type="radio" name="program" id="prog-wells" value="Wells Place">
-        <label for="prog-wells">Wells Place</label>
-      </div>
-      <div class="program-error" id="err-program">Please select a program.</div>
-    </div>
-
     <!-- Date & Staff -->
     <div class="section-label">Staff Details</div>
     <div class="row">
@@ -415,6 +403,16 @@ function addTrip() {
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         Remove
       </button>
+    </div>
+    <div class="field">
+      <label>Program <span class="req">*</span></label>
+      <div class="program-toggle">
+        <input type="radio" name="program-${id}" id="prog-hope-${id}" value="Hope House">
+        <label for="prog-hope-${id}">Hope House</label>
+        <input type="radio" name="program-${id}" id="prog-wells-${id}" value="Wells Place">
+        <label for="prog-wells-${id}">Wells Place</label>
+      </div>
+      <div class="program-error" id="err-program-${id}">Please select a program.</div>
     </div>
     <div class="field">
       <label for="start-${id}">Starting Address <span class="req">*</span></label>
@@ -596,12 +594,6 @@ function showErr(id, show, msg) {
 function validate() {
   let ok = true;
 
-  // Program
-  const program = document.querySelector('input[name="program"]:checked');
-  const progErr = document.getElementById('err-program');
-  if (!program) { progErr.classList.add('show'); ok = false; }
-  else           { progErr.classList.remove('show'); }
-
   // Date & name
   ['tripDate','staffName'].forEach(id => {
     const empty = !document.getElementById(id).value.trim();
@@ -611,10 +603,16 @@ function validate() {
 
   // Each trip card
   document.querySelectorAll('.trip-card').forEach(card => {
-    const id      = card.dataset.id;
+    const id = card.dataset.id;
+
+    // Program per trip
+    const prog    = document.querySelector('input[name="program-' + id + '"]:checked');
+    const progErr = document.getElementById('err-program-' + id);
+    if (!prog) { progErr.classList.add('show'); ok = false; }
+    else        { progErr.classList.remove('show'); }
+
     const startEl = document.getElementById('start-' + id);
     const destEl  = document.getElementById('dest-'  + id);
-
     const noStart = !startEl.value.trim();
     const noDest  = !destEl.value.trim();
     const errS    = document.getElementById('err-start-' + id);
@@ -645,26 +643,18 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!validate()) return;
 
-  const program = document.querySelector('input[name="program"]:checked').value;
-  const flowUrl = FLOW_URLS[program];
-
-  if (!flowUrl || flowUrl.startsWith('PASTE_')) {
-    document.getElementById('errorMsg').textContent =
-      'Flow URL not configured for ' + program + '. Please contact your administrator.';
-    showOverlay('errorOverlay');
-    return;
-  }
-
   btn.classList.add('loading');
   btn.disabled = true;
 
-  // Build trips array
-  const trips = document.querySelectorAll('.trip-card');
-  const tripList = Array.from(trips).map((card, i) => {
-    const id = card.dataset.id;
-    const d  = milesData[id] || {};
+  // Build trip list with per-trip program
+  const cards = document.querySelectorAll('.trip-card');
+  const tripList = Array.from(cards).map((card, i) => {
+    const id   = card.dataset.id;
+    const d    = milesData[id] || {};
+    const prog = (document.querySelector('input[name="program-' + id + '"]:checked') || {}).value || '';
     return {
       tripNumber:         i + 1,
+      program:            prog,
       startingAddress:    (document.getElementById('start-' + id) || {}).value?.trim() || '',
       destinationAddress: (document.getElementById('dest-'  + id) || {}).value?.trim() || '',
       miles:              d.miles || 0,
@@ -674,20 +664,33 @@ form.addEventListener('submit', async (e) => {
 
   const totalMiles = tripList.reduce((s, t) => s + t.miles, 0);
   const totalReim  = (totalMiles * RATE).toFixed(2);
+  const tripDate   = document.getElementById('tripDate').value;
+  const staffName  = document.getElementById('staffName').value.trim();
+  const purpose    = document.getElementById('tripPurpose').value.trim();
+  const submittedAt = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
 
-  const payload = {
-    program,
-    tripDate:               document.getElementById('tripDate').value,
-    staffName:              document.getElementById('staffName').value.trim(),
-    trips,
-    totalMiles:             parseFloat(totalMiles.toFixed(2)),
-    estimatedReimbursement: totalReim,
-    purposeOfTrip:          document.getElementById('tripPurpose').value.trim(),
-    submittedAt:            new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }),
-  };
+  // Group trips by program and send to each program's flow
+  const byProgram = {};
+  tripList.forEach(t => {
+    if (!byProgram[t.program]) byProgram[t.program] = [];
+    byProgram[t.program].push(t);
+  });
 
-  try {
-    await new Promise(resolve => {
+  const sends = Object.entries(byProgram).map(([prog, progTrips]) => {
+    const flowUrl = FLOW_URLS[prog];
+    if (!flowUrl || flowUrl.startsWith('PASTE_')) return Promise.resolve();
+    const progMiles = progTrips.reduce((s, t) => s + t.miles, 0);
+    const payload = {
+      program:                prog,
+      tripDate,
+      staffName,
+      trips:                  progTrips,
+      totalMiles:             parseFloat(progMiles.toFixed(2)),
+      estimatedReimbursement: (progMiles * RATE).toFixed(2),
+      purposeOfTrip:          purpose,
+      submittedAt,
+    };
+    return new Promise(resolve => {
       const xhr = new XMLHttpRequest();
       xhr.open('POST', flowUrl, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
@@ -696,8 +699,13 @@ form.addEventListener('submit', async (e) => {
       setTimeout(resolve, 6000);
       xhr.send(JSON.stringify(payload));
     });
+  });
+
+  try {
+    await Promise.all(sends);
+    const programs = [...new Set(tripList.map(t => t.program))].join(' & ');
     document.getElementById('successMsg').textContent =
-      trips.length + ' trip' + (trips.length > 1 ? 's' : '') + ' logged for ' + program +
+      tripList.length + ' trip' + (tripList.length > 1 ? 's' : '') + ' logged for ' + programs +
       ' — ' + totalMiles.toFixed(2) + ' total miles. Estimated reimbursement: $' + totalReim + '.';
     showOverlay('successOverlay');
   } catch {
