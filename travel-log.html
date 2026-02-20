@@ -98,6 +98,8 @@
   textarea{resize:vertical;min-height:80px}
   .row{display:flex;gap:1rem}
   .row .field{flex:1}
+  .staff-fields{display:flex;gap:1rem}
+  .staff-fields .field{flex:1}
 
   /* ── Trip Card ── */
   .trip-card{
@@ -269,13 +271,14 @@
     .card{margin:.5rem .5rem 1rem;padding:1.25rem 1rem 1.75rem}
     .card h2{margin:-1.25rem -1rem 1.25rem;padding:.9rem 1rem;font-size:.95rem}
 
-    /* Keep date + staff name side by side, smaller */
-    .row{display:flex;flex-direction:row;gap:.5rem}
-    .row input{padding:.5rem .55rem;font-size:.92rem}
-    .row label{font-size:.78rem}
+    /* Stack staff name + date vertically on mobile */
+    .staff-fields{flex-direction:column;gap:.5rem}
+    .staff-fields input{padding:.55rem .7rem;font-size:.95rem}
+    .staff-fields label{font-size:.8rem}
 
     /* Compact all inputs on mobile */
     input,textarea{padding:.55rem .7rem;font-size:1rem}
+    .row{flex-direction:column;gap:0}
 
     .leaflet-map{height:185px !important}
     .btn,.route-btn{padding:1rem}
@@ -284,8 +287,7 @@
   @media(max-width:380px){
     .logo-bar img{max-width:220px}
     .card{margin:.25rem .25rem .75rem;padding:1rem .85rem 1.5rem}
-    .row{gap:.35rem}
-    .row input{font-size:.85rem;padding:.45rem .45rem}
+    .staff-fields input{font-size:.9rem;padding:.5rem .65rem}
     .leaflet-map{height:160px !important}
   }
 </style>
@@ -303,16 +305,16 @@
 
     <!-- Date & Staff -->
     <div class="section-label">Staff Details</div>
-    <div class="row">
-      <div class="field">
-        <label for="tripDate">Date <span class="req">*</span></label>
-        <input type="date" id="tripDate" name="tripDate" required>
-        <div class="error-msg" id="err-tripDate">Please select the date.</div>
-      </div>
+    <div class="staff-fields">
       <div class="field">
         <label for="staffName">Staff Name <span class="req">*</span></label>
         <input type="text" id="staffName" name="staffName" placeholder="Full name" required autocomplete="name">
         <div class="error-msg" id="err-staffName">Please enter the staff name.</div>
+      </div>
+      <div class="field">
+        <label for="tripDate">Date of Travel <span class="req">*</span></label>
+        <input type="date" id="tripDate" name="tripDate" required>
+        <div class="error-msg" id="err-tripDate">Please select the date.</div>
       </div>
     </div>
 
