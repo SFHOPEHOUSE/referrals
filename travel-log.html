@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vehicle Travel Log — The Way Out SF</title>
+
+<!-- Leaflet map library -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -19,7 +24,6 @@
     --border:#D1D5DB;
     --radius:10px;
     --shadow:0 4px 24px rgba(0,0,0,.08);
-    --rate:0.72;
   }
 
   body{
@@ -33,31 +37,18 @@
     position:relative;
   }
 
-  /* ── SF Background ── */
   body::before{
     content:'';
-    position:fixed;
-    inset:0;
-    z-index:-2;
-    background:
-      url('https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1920&q=80')
-      center center / cover no-repeat;
+    position:fixed;inset:0;z-index:-2;
+    background:url('https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1920&q=80') center/cover no-repeat;
   }
   body::after{
     content:'';
-    position:fixed;
-    inset:0;
-    z-index:-1;
-    background:linear-gradient(
-      180deg,
-      rgba(245,245,245,.88) 0%,
-      rgba(245,245,245,.75) 40%,
-      rgba(27,58,92,.55) 100%
-    );
+    position:fixed;inset:0;z-index:-1;
+    background:linear-gradient(180deg,rgba(245,245,245,.88) 0%,rgba(245,245,245,.75) 40%,rgba(27,58,92,.55) 100%);
     backdrop-filter:blur(2px);
   }
 
-  /* ── Logo Bar ── */
   .logo-bar{
     background:rgba(255,255,255,.92);
     backdrop-filter:blur(12px);
@@ -65,16 +56,10 @@
     padding:1.5rem 1rem;
     border-bottom:1px solid rgba(255,255,255,.6);
   }
-  .logo-bar img{
-    max-width:480px;
-    width:90%;
-    height:auto;
-  }
+  .logo-bar img{max-width:480px;width:90%;height:auto}
 
-  /* ── Card ── */
   .card{
-    max-width:640px;
-    width:100%;
+    max-width:640px;width:100%;
     margin:1.5rem auto 2rem;
     border-radius:var(--radius);
     box-shadow:var(--shadow);
@@ -87,201 +72,143 @@
 
   .card h2{
     font-family:'Calibri','Calibri Body',Candara,'Segoe UI',sans-serif;
-    color:var(--white);
-    font-size:1.1rem;
-    font-weight:700;
-    letter-spacing:.08em;
-    margin:-2rem -2rem 1.75rem;
-    padding:1.1rem 2rem;
+    color:var(--white);font-size:1.1rem;font-weight:700;letter-spacing:.08em;
+    margin:-2rem -2rem 1.75rem;padding:1.1rem 2rem;
     background:linear-gradient(135deg,var(--blue) 0%,var(--red) 50%,var(--blue) 100%);
-    background-size:200% 100%;
     border-radius:var(--radius) var(--radius) 0 0;
-    text-align:center;
-    text-transform:uppercase;
+    text-align:center;text-transform:uppercase;
     text-shadow:0 1px 3px rgba(0,0,0,.25);
     border-bottom:3px solid var(--red-dark);
   }
 
   /* ── Program Toggle ── */
-  .program-toggle{
-    display:flex;
-    gap:.6rem;
-    margin-bottom:1.5rem;
-  }
+  .program-toggle{display:flex;gap:.6rem;margin-bottom:1.5rem}
   .program-toggle input[type="radio"]{display:none}
   .program-toggle label{
-    flex:1;
-    text-align:center;
-    padding:.75rem .5rem;
-    border:2px solid var(--border);
-    border-radius:8px;
-    cursor:pointer;
-    font-size:.92rem;
-    font-weight:600;
-    color:var(--gray);
-    background:var(--white);
-    transition:all .2s;
-    user-select:none;
+    flex:1;text-align:center;padding:.75rem .5rem;
+    border:2px solid var(--border);border-radius:8px;
+    cursor:pointer;font-size:.92rem;font-weight:600;
+    color:var(--gray);background:var(--white);
+    transition:all .2s;user-select:none;
   }
   .program-toggle input:checked + label{
-    border-color:var(--red);
-    background:var(--red);
-    color:var(--white);
+    border-color:var(--red);background:var(--red);color:var(--white);
     box-shadow:0 2px 8px rgba(200,16,46,.25);
   }
-  .program-toggle label:hover{
-    border-color:var(--red);
-    color:var(--red);
-  }
-  .program-toggle input:checked + label:hover{
-    color:var(--white);
-  }
-  .program-error{
-    color:var(--red);
-    font-size:.78rem;
-    margin-top:-.9rem;
-    margin-bottom:.9rem;
-    display:none;
-  }
+  .program-toggle label:hover{border-color:var(--red);color:var(--red)}
+  .program-toggle input:checked + label:hover{color:var(--white)}
+  .program-error{color:var(--red);font-size:.78rem;margin-top:-.9rem;margin-bottom:.9rem;display:none}
   .program-error.show{display:block}
 
-  /* ── Section divider ── */
+  /* ── Section label ── */
   .section-label{
-    color:var(--blue);
-    font-size:.8rem;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:.06em;
-    margin:1.75rem 0 .75rem;
-    padding-bottom:.4rem;
+    color:var(--blue);font-size:.8rem;font-weight:700;
+    text-transform:uppercase;letter-spacing:.06em;
+    margin:1.75rem 0 .75rem;padding-bottom:.4rem;
     border-bottom:1.5px solid #E5E7EB;
   }
 
-  /* ── Form fields ── */
+  /* ── Fields ── */
   .field{margin-bottom:1.1rem}
-
-  label{
-    display:block;
-    font-size:.85rem;
-    font-weight:600;
-    color:var(--text);
-    margin-bottom:.35rem;
-  }
+  label{display:block;font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.35rem}
   label .req{color:var(--red);margin-left:2px}
 
-  input, select, textarea{
-    width:100%;
-    padding:.7rem .85rem;
-    font-size:1rem;
-    border:1.5px solid var(--border);
-    border-radius:6px;
-    outline:none;
-    transition:border-color .2s,box-shadow .2s;
-    background:var(--white);
-    color:var(--text);
-    font-family:inherit;
-    appearance:none;
-    -webkit-appearance:none;
+  input, textarea{
+    width:100%;padding:.7rem .85rem;font-size:1rem;
+    border:1.5px solid var(--border);border-radius:6px;
+    outline:none;transition:border-color .2s,box-shadow .2s;
+    background:var(--white);color:var(--text);font-family:inherit;
   }
-  input:focus, select:focus, textarea:focus{
-    border-color:var(--red);
-    box-shadow:0 0 0 3px rgba(200,16,46,.12);
-  }
-  input.invalid, select.invalid, textarea.invalid{
-    border-color:var(--red);
-    background:#FEF2F2;
-  }
-  .error-msg{
-    color:var(--red);
-    font-size:.78rem;
-    margin-top:.25rem;
-    display:none;
-  }
+  input:focus, textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(200,16,46,.12)}
+  input.invalid, textarea.invalid{border-color:var(--red);background:#FEF2F2}
+  .error-msg{color:var(--red);font-size:.78rem;margin-top:.25rem;display:none}
   .error-msg.show{display:block}
+  textarea{resize:vertical;min-height:80px}
 
-  select{
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat:no-repeat;
-    background-position:right .85rem center;
-    padding-right:2.25rem;
-  }
-
-  textarea{
-    resize:vertical;
-    min-height:80px;
-  }
-
-  /* ── Two-column row ── */
   .row{display:flex;gap:1rem}
   .row .field{flex:1}
 
-  /* ── Odometer / Miles block ── */
-  .odo-row{
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    gap:1rem;
+  /* ── Route button ── */
+  .route-btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+    width:100%;padding:.75rem;margin-top:.25rem;
+    font-size:.92rem;font-weight:600;font-family:inherit;
+    color:var(--white);background:var(--blue);
+    border:none;border-radius:6px;cursor:pointer;
+    transition:background .2s,transform .1s;
   }
+  .route-btn:hover{background:var(--blue-light)}
+  .route-btn:active{transform:scale(.98)}
+  .route-btn:disabled{opacity:.6;cursor:not-allowed}
+  .route-btn .spinner{
+    width:16px;height:16px;
+    border:2px solid rgba(255,255,255,.35);
+    border-top-color:var(--white);border-radius:50%;
+    animation:spin .6s linear infinite;display:none;
+  }
+  .route-btn.loading .spinner{display:block}
+  .route-btn.loading .btn-text{display:none}
+
+  /* ── Map container ── */
+  #mapWrap{
+    margin-top:1rem;
+    border-radius:8px;overflow:hidden;
+    border:1.5px solid var(--border);
+    display:none;
+  }
+  #map{height:260px;width:100%}
+
+  /* ── Miles result ── */
+  .miles-result{
+    display:none;
+    margin-top:.75rem;
+    padding:.7rem 1rem;
+    background:#F0F9FF;
+    border:1.5px solid #BAE6FD;
+    border-radius:8px;
+    font-size:.88rem;
+    color:var(--blue);
+  }
+  .miles-result strong{font-size:1rem}
+  .route-error{
+    display:none;
+    margin-top:.6rem;
+    padding:.6rem .9rem;
+    background:#FEF2F2;border:1.5px solid #FCA5A5;
+    border-radius:6px;font-size:.82rem;color:var(--red);
+  }
+  .route-error.show{display:block}
 
   /* ── Reimbursement callout ── */
   .reimb-box{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
+    display:none;
+    align-items:center;justify-content:space-between;
     background:linear-gradient(135deg,rgba(27,58,92,.07),rgba(200,16,46,.06));
     border:1.5px solid rgba(27,58,92,.15);
-    border-radius:8px;
-    padding:.85rem 1.1rem;
-    margin-top:1.25rem;
+    border-radius:8px;padding:.85rem 1.1rem;margin-top:1rem;
   }
-  .reimb-box .label{
-    font-size:.82rem;
-    font-weight:600;
-    color:var(--blue);
-    text-transform:uppercase;
-    letter-spacing:.05em;
-  }
-  .reimb-box .amount{
-    font-size:1.4rem;
-    font-weight:700;
-    color:var(--red);
-    font-variant-numeric:tabular-nums;
-  }
-  .reimb-box .rate-note{
-    font-size:.72rem;
-    color:var(--gray);
-    margin-top:.1rem;
-  }
+  .reimb-box.show{display:flex}
+  .reimb-box .rlabel{font-size:.82rem;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:.05em}
+  .reimb-box .amount{font-size:1.4rem;font-weight:700;color:var(--red);font-variant-numeric:tabular-nums}
+  .reimb-box .rate-note{font-size:.72rem;color:var(--gray);margin-top:.1rem}
 
   /* ── Submit button ── */
   .btn{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:.5rem;
-    width:100%;
-    padding:.9rem;
-    margin-top:1.25rem;
-    font-size:1rem;
-    font-weight:600;
-    font-family:inherit;
-    color:var(--white);
-    background:var(--red);
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+    width:100%;padding:.9rem;margin-top:1.25rem;
+    font-size:1rem;font-weight:600;font-family:inherit;
+    color:var(--white);background:var(--red);
+    border:none;border-radius:6px;cursor:pointer;
     transition:background .2s,transform .1s;
   }
   .btn:hover{background:var(--red-dark)}
   .btn:active{transform:scale(.98)}
   .btn:disabled{opacity:.6;cursor:not-allowed}
-
   .btn .spinner{
     width:18px;height:18px;
     border:2.5px solid rgba(255,255,255,.3);
-    border-top-color:var(--white);
-    border-radius:50%;
-    animation:spin .6s linear infinite;
-    display:none;
+    border-top-color:var(--white);border-radius:50%;
+    animation:spin .6s linear infinite;display:none;
   }
   .btn.loading .spinner{display:block}
   .btn.loading .btn-text{display:none}
@@ -291,22 +218,16 @@
   /* ── Overlay ── */
   .overlay{
     position:absolute;inset:0;
-    display:flex;flex-direction:column;
-    align-items:center;justify-content:center;
-    background:rgba(255,255,255,.97);
-    border-radius:var(--radius);
-    opacity:0;pointer-events:none;
-    transition:opacity .35s;
-    padding:2rem;
-    text-align:center;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.97);border-radius:var(--radius);
+    opacity:0;pointer-events:none;transition:opacity .35s;
+    padding:2rem;text-align:center;
   }
   .overlay.visible{opacity:1;pointer-events:auto}
   .overlay .icon{
-    width:64px;height:64px;
-    border-radius:50%;
+    width:64px;height:64px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;
-    margin-bottom:1rem;
-    animation:pop .4s ease;
+    margin-bottom:1rem;animation:pop .4s ease;
   }
   .overlay .icon.success{background:#DEF7EC;color:#059669}
   .overlay .icon.failure{background:#FEE2E2;color:var(--red)}
@@ -314,28 +235,14 @@
   .overlay h3{font-size:1.2rem;margin-bottom:.35rem}
   .overlay p{color:var(--gray);font-size:.9rem;max-width:360px}
   .overlay .btn-reset{
-    margin-top:1.25rem;
-    padding:.55rem 1.5rem;
-    font-size:.88rem;
-    width:auto;
-    background:var(--blue);
+    margin-top:1.25rem;padding:.55rem 1.5rem;
+    font-size:.88rem;width:auto;background:var(--blue);
   }
   .overlay .btn-reset:hover{background:var(--blue-light)}
 
-  @keyframes pop{
-    0%{transform:scale(0)}
-    60%{transform:scale(1.15)}
-    100%{transform:scale(1)}
-  }
+  @keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
 
-  /* ── Footer ── */
-  .footer{
-    text-align:center;
-    padding:1.5rem 1rem;
-    font-size:.78rem;
-    color:var(--gray);
-    margin-top:auto;
-  }
+  .footer{text-align:center;padding:1.5rem 1rem;font-size:.78rem;color:var(--gray);margin-top:auto}
 
   /* ── Responsive ── */
   @media(max-width:600px){
@@ -344,16 +251,14 @@
     .card{margin:.5rem .5rem 1rem;padding:1.25rem 1rem 1.75rem}
     .card h2{margin:-1.25rem -1rem 1.25rem;padding:.9rem 1rem;font-size:.95rem}
     .row{flex-direction:column;gap:0}
-    .odo-row{grid-template-columns:1fr 1fr;gap:.6rem}
-    .odo-row .field:last-child{grid-column:1/-1}
-    .btn{padding:1rem}
+    #map{height:210px}
+    .btn,.route-btn{padding:1rem}
     .footer{font-size:.72rem;padding:1rem .75rem}
   }
-
   @media(max-width:380px){
     .logo-bar img{max-width:220px}
     .card{margin:.25rem .25rem .75rem;padding:1rem .85rem 1.5rem}
-    .odo-row{grid-template-columns:1fr}
+    #map{height:180px}
   }
 </style>
 </head>
@@ -368,7 +273,7 @@
 
   <form id="travelForm" novalidate>
 
-    <!-- Program Selection -->
+    <!-- Program -->
     <div class="field">
       <label>Program <span class="req">*</span></label>
       <div class="program-toggle">
@@ -380,9 +285,8 @@
       <div class="program-error" id="err-program">Please select a program.</div>
     </div>
 
-    <!-- Trip Info -->
+    <!-- Trip details -->
     <div class="section-label">Trip Details</div>
-
     <div class="row">
       <div class="field">
         <label for="tripDate">Date of Trip <span class="req">*</span></label>
@@ -396,56 +300,56 @@
       </div>
     </div>
 
-    <!-- Odometer -->
-    <div class="section-label">Mileage</div>
-
-    <div class="odo-row">
-      <div class="field">
-        <label for="odoStart">Starting Odometer <span class="req">*</span></label>
-        <input type="number" id="odoStart" name="odoStart" placeholder="e.g. 12450" min="0" step="0.1" required inputmode="decimal">
-        <div class="error-msg" id="err-odoStart">Enter starting odometer.</div>
-      </div>
-      <div class="field">
-        <label for="odoEnd">Ending Odometer <span class="req">*</span></label>
-        <input type="number" id="odoEnd" name="odoEnd" placeholder="e.g. 12478" min="0" step="0.1" required inputmode="decimal">
-        <div class="error-msg" id="err-odoEnd">Enter ending odometer.</div>
-      </div>
-      <div class="field">
-        <label for="totalMiles">Total Miles</label>
-        <input type="text" id="totalMiles" name="totalMiles" placeholder="Auto-calculated" readonly tabindex="-1" style="background:#F9FAFB;color:var(--gray);cursor:default">
-      </div>
-    </div>
-
-    <!-- Reimbursement estimate -->
-    <div class="reimb-box" id="reimbBox" style="display:none">
-      <div>
-        <div class="label">Estimated Reimbursement</div>
-        <div class="rate-note">@ $0.72 per mile</div>
-      </div>
-      <div class="amount" id="reimbAmount">$0.00</div>
-    </div>
-
-    <!-- Addresses -->
+    <!-- Route & Map -->
     <div class="section-label">Route</div>
 
     <div class="field">
       <label for="startAddress">Starting Address <span class="req">*</span></label>
-      <input type="text" id="startAddress" name="startAddress" placeholder="123 Main St, San Francisco, CA" required autocomplete="street-address">
+      <input type="text" id="startAddress" name="startAddress"
+        placeholder="123 Main St, San Francisco, CA" required autocomplete="street-address">
       <div class="error-msg" id="err-startAddress">Please enter the starting address.</div>
     </div>
 
     <div class="field">
       <label for="destAddress">Destination Address <span class="req">*</span></label>
-      <input type="text" id="destAddress" name="destAddress" placeholder="456 Market St, San Francisco, CA" required autocomplete="off">
+      <input type="text" id="destAddress" name="destAddress"
+        placeholder="456 Market St, San Francisco, CA" required autocomplete="off">
       <div class="error-msg" id="err-destAddress">Please enter the destination address.</div>
+    </div>
+
+    <button type="button" class="route-btn" id="routeBtn" onclick="calculateRoute()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8l4 4-4 4M8 12h8"/></svg>
+      <span class="btn-text">Get Driving Distance &amp; Map</span>
+      <span class="spinner"></span>
+    </button>
+
+    <div class="route-error" id="routeError"></div>
+
+    <!-- Map -->
+    <div id="mapWrap"><div id="map"></div></div>
+
+    <!-- Miles result -->
+    <div class="miles-result" id="milesResult"></div>
+
+    <!-- Hidden fields populated by route calculation -->
+    <input type="hidden" id="totalMiles" name="totalMiles">
+    <input type="hidden" id="drivingDuration" name="drivingDuration">
+
+    <!-- Reimbursement -->
+    <div class="reimb-box" id="reimbBox">
+      <div>
+        <div class="rlabel">Estimated Reimbursement</div>
+        <div class="rate-note">@ $0.72 per mile</div>
+      </div>
+      <div class="amount" id="reimbAmount">$0.00</div>
     </div>
 
     <!-- Purpose -->
     <div class="section-label">Purpose</div>
-
     <div class="field">
       <label for="tripPurpose">Purpose of Trip <span class="req">*</span></label>
-      <textarea id="tripPurpose" name="tripPurpose" placeholder="Describe the reason for this trip (e.g. Client transport to medical appointment, supply pickup, site visit...)" required></textarea>
+      <textarea id="tripPurpose" name="tripPurpose"
+        placeholder="Describe the reason for this trip (e.g. Client transport to medical appointment, supply pickup, site visit...)" required></textarea>
       <div class="error-msg" id="err-tripPurpose">Please describe the purpose of the trip.</div>
     </div>
 
@@ -477,173 +381,262 @@
 </main>
 
 <footer class="footer">
-  &copy; 2026 The Way Out SF &mdash; The Salvation Army
+  &copy; 2026 The Way Out SF &mdash; The Salvation Army &nbsp;|&nbsp; Map data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" style="color:inherit">OpenStreetMap</a> contributors
 </footer>
 
 <script>
-  // ── CONFIG ─────────────────────────────────────────────────
-  // Paste your Power Automate HTTP trigger URLs below.
-  // Each program routes to its own flow / spreadsheet.
-  const FLOW_URLS = {
-    'Hope House':  'PASTE_HOPE_HOUSE_FLOW_URL_HERE',
-    'Wells Place': 'PASTE_WELLS_PLACE_FLOW_URL_HERE',
-  };
-  const RATE_PER_MILE = 0.72;
-  // ───────────────────────────────────────────────────────────
+// ── CONFIG ──────────────────────────────────────────────────
+const FLOW_URLS = {
+  'Hope House':  'PASTE_HOPE_HOUSE_FLOW_URL_HERE',
+  'Wells Place': 'PASTE_WELLS_PLACE_FLOW_URL_HERE',
+};
+const RATE_PER_MILE = 0.72;
+// ────────────────────────────────────────────────────────────
 
-  const form   = document.getElementById('travelForm');
-  const btn    = document.getElementById('submitBtn');
-  const odoS   = document.getElementById('odoStart');
-  const odoE   = document.getElementById('odoEnd');
-  const milesF = document.getElementById('totalMiles');
-  const reimbB = document.getElementById('reimbBox');
-  const reimbA = document.getElementById('reimbAmount');
+const form   = document.getElementById('travelForm');
+const btn    = document.getElementById('submitBtn');
+let map = null, routeLayer = null;
 
-  // Set default date to today
-  document.getElementById('tripDate').valueAsDate = new Date();
+// Default date to today
+document.getElementById('tripDate').valueAsDate = new Date();
 
-  // ── Auto-calculate miles & reimbursement ──
-  function calcMiles() {
-    const s = parseFloat(odoS.value);
-    const e = parseFloat(odoE.value);
-    if (!isNaN(s) && !isNaN(e) && e > s) {
-      const miles = (e - s).toFixed(1);
-      milesF.value = miles;
-      reimbA.textContent = '$' + (miles * RATE_PER_MILE).toFixed(2);
-      reimbB.style.display = 'flex';
-    } else {
-      milesF.value = '';
-      reimbB.style.display = 'none';
-    }
+// ── Geocode address → {lat, lng} using Nominatim ──
+async function geocode(address) {
+  const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q='
+    + encodeURIComponent(address);
+  const res = await fetch(url, { headers: { 'Accept-Language': 'en-US,en' } });
+  const data = await res.json();
+  if (!data.length) throw new Error('Address not found: "' + address + '"');
+  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), display: data[0].display_name };
+}
+
+// ── Get driving route from OSRM ──
+async function getRoute(start, end) {
+  const url = 'https://router.project-osrm.org/route/v1/driving/'
+    + start.lng + ',' + start.lat + ';'
+    + end.lng   + ',' + end.lat
+    + '?overview=full&geometries=geojson';
+  const res  = await fetch(url);
+  const data = await res.json();
+  if (data.code !== 'Ok' || !data.routes.length) throw new Error('Could not calculate driving route.');
+  return data.routes[0];
+}
+
+// ── Calculate route and draw map ──
+async function calculateRoute() {
+  const startVal = document.getElementById('startAddress').value.trim();
+  const destVal  = document.getElementById('destAddress').value.trim();
+  const routeErr = document.getElementById('routeError');
+  const routeBtn = document.getElementById('routeBtn');
+
+  routeErr.classList.remove('show');
+
+  if (!startVal || !destVal) {
+    routeErr.textContent = 'Please enter both a starting and destination address first.';
+    routeErr.classList.add('show');
+    return;
   }
-  odoS.addEventListener('input', calcMiles);
-  odoE.addEventListener('input', calcMiles);
 
-  // ── Validation ──
-  function showErr(id, show) {
-    const el  = document.getElementById('err-' + id);
-    const inp = document.getElementById(id);
-    if (!el || !inp) return;
-    el.classList.toggle('show', show);
-    inp.classList.toggle('invalid', show);
-  }
+  routeBtn.classList.add('loading');
+  routeBtn.disabled = true;
 
-  function validate() {
-    let ok = true;
+  try {
+    // Geocode both addresses
+    const [startCoord, endCoord] = await Promise.all([geocode(startVal), geocode(destVal)]);
 
-    // Program
-    const program = document.querySelector('input[name="program"]:checked');
-    const progErr = document.getElementById('err-program');
-    if (!program) {
-      progErr.classList.add('show');
-      ok = false;
-    } else {
-      progErr.classList.remove('show');
+    // Get route
+    const route = await getRoute(startCoord, endCoord);
+
+    // Miles & duration
+    const miles    = (route.distance * 0.000621371).toFixed(2);
+    const totalSec = route.duration;
+    const mins     = Math.round(totalSec / 60);
+    const hrs      = Math.floor(mins / 60);
+    const remMins  = mins % 60;
+    const durationStr = hrs > 0 ? hrs + ' hr ' + remMins + ' min' : remMins + ' min';
+
+    document.getElementById('totalMiles').value    = miles;
+    document.getElementById('drivingDuration').value = durationStr;
+
+    // Show miles result
+    const milesEl = document.getElementById('milesResult');
+    milesEl.innerHTML =
+      '<strong>' + miles + ' miles</strong> &nbsp;·&nbsp; ~' + durationStr + ' driving';
+    milesEl.style.display = 'block';
+
+    // Reimbursement
+    const reimb = (miles * RATE_PER_MILE).toFixed(2);
+    document.getElementById('reimbAmount').textContent = '$' + reimb;
+    document.getElementById('reimbBox').classList.add('show');
+
+    // Draw map
+    const mapWrap = document.getElementById('mapWrap');
+    mapWrap.style.display = 'block';
+
+    if (!map) {
+      map = L.map('map', { zoomControl: true, scrollWheelZoom: false });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+      }).addTo(map);
     }
 
-    // Required text / date fields
-    ['tripDate','staffName','startAddress','destAddress','tripPurpose'].forEach(id => {
-      const empty = !document.getElementById(id).value.trim();
-      showErr(id, empty);
-      if (empty) ok = false;
+    // Remove old route layer
+    if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
+
+    // Draw route polyline
+    const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+    routeLayer = L.layerGroup().addTo(map);
+
+    L.polyline(coords, { color: '#C8102E', weight: 4, opacity: 0.85 }).addTo(routeLayer);
+
+    // Start marker (green)
+    const startIcon = L.divIcon({
+      className: '',
+      html: '<div style="background:#059669;width:14px;height:14px;border-radius:50%;border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
+      iconSize: [14, 14], iconAnchor: [7, 7],
+    });
+    // End marker (red)
+    const endIcon = L.divIcon({
+      className: '',
+      html: '<div style="background:#C8102E;width:14px;height:14px;border-radius:50%;border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
+      iconSize: [14, 14], iconAnchor: [7, 7],
     });
 
-    // Odometer required + logic
-    const s = parseFloat(odoS.value);
-    const e = parseFloat(odoE.value);
-    const badStart = isNaN(s) || s < 0;
-    const badEnd   = isNaN(e) || e < 0;
-    const badOrder = !badStart && !badEnd && e <= s;
-    showErr('odoStart', badStart);
-    showErr('odoEnd', badEnd || badOrder);
-    if (badStart || badEnd || badOrder) {
-      if (badOrder) document.getElementById('err-odoEnd').textContent = 'Ending odometer must be greater than starting.';
-      else document.getElementById('err-odoEnd').textContent = 'Enter ending odometer.';
-      ok = false;
-    }
+    L.marker([startCoord.lat, startCoord.lng], { icon: startIcon })
+      .bindPopup('<b>Start</b><br>' + startVal).addTo(routeLayer);
+    L.marker([endCoord.lat,   endCoord.lng],   { icon: endIcon })
+      .bindPopup('<b>Destination</b><br>' + destVal).addTo(routeLayer);
 
-    return ok;
+    // Fit map to route
+    map.fitBounds(L.polyline(coords).getBounds(), { padding: [24, 24] });
+
+    // Leaflet needs a size hint after becoming visible
+    setTimeout(() => map.invalidateSize(), 100);
+
+  } catch (err) {
+    routeErr.textContent = err.message || 'Could not calculate route. Check the addresses and try again.';
+    routeErr.classList.add('show');
+  } finally {
+    routeBtn.classList.remove('loading');
+    routeBtn.disabled = false;
   }
+}
 
-  // Clear errors on input
-  form.querySelectorAll('input, select, textarea').forEach(el => {
-    el.addEventListener('input', () => showErr(el.id, false));
-  });
-  document.querySelectorAll('input[name="program"]').forEach(r => {
-    r.addEventListener('change', () => document.getElementById('err-program').classList.remove('show'));
-  });
+// ── Validation ──
+function showErr(id, show) {
+  const el  = document.getElementById('err-' + id);
+  const inp = document.getElementById(id);
+  if (!el || !inp) return;
+  el.classList.toggle('show', show);
+  inp.classList.toggle('invalid', show);
+}
 
-  // ── Submit ──
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!validate()) return;
+function validate() {
+  let ok = true;
 
-    const program = document.querySelector('input[name="program"]:checked').value;
-    const flowUrl = FLOW_URLS[program];
+  // Program
+  const program = document.querySelector('input[name="program"]:checked');
+  const progErr = document.getElementById('err-program');
+  if (!program) { progErr.classList.add('show'); ok = false; }
+  else           { progErr.classList.remove('show'); }
 
-    if (!flowUrl || flowUrl.startsWith('PASTE_')) {
-      document.getElementById('errorMsg').textContent =
-        'Flow URL not configured for ' + program + '. Please contact your administrator.';
-      showOverlay('errorOverlay');
-      return;
-    }
-
-    btn.classList.add('loading');
-    btn.disabled = true;
-
-    const miles = parseFloat(milesF.value) || 0;
-
-    const payload = {
-      program:          program,
-      tripDate:         document.getElementById('tripDate').value,
-      staffName:        document.getElementById('staffName').value.trim(),
-      startingOdometer: parseFloat(odoS.value),
-      endingOdometer:   parseFloat(odoE.value),
-      totalMiles:       miles,
-      estimatedReimbursement: (miles * RATE_PER_MILE).toFixed(2),
-      startingAddress:  document.getElementById('startAddress').value.trim(),
-      destinationAddress: document.getElementById('destAddress').value.trim(),
-      purposeOfTrip:    document.getElementById('tripPurpose').value.trim(),
-      submittedAt:      new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }),
-    };
-
-    try {
-      await new Promise((resolve) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', flowUrl, true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.onreadystatechange = () => { if (xhr.readyState === 4) resolve(); };
-        xhr.onerror = () => resolve();
-        setTimeout(resolve, 5000);
-        xhr.send(JSON.stringify(payload));
-      });
-      document.getElementById('successMsg').textContent =
-        'Your trip for ' + program + ' has been recorded and sent to the spreadsheet.';
-      showOverlay('successOverlay');
-    } catch (err) {
-      document.getElementById('errorMsg').textContent =
-        'Network error — please check your connection and try again.';
-      showOverlay('errorOverlay');
-    } finally {
-      btn.classList.remove('loading');
-      btn.disabled = false;
-    }
+  // Required fields
+  ['tripDate','staffName','startAddress','destAddress','tripPurpose'].forEach(id => {
+    const empty = !document.getElementById(id).value.trim();
+    showErr(id, empty);
+    if (empty) ok = false;
   });
 
-  // ── Overlays ──
-  function showOverlay(id) {
-    document.getElementById(id).classList.add('visible');
+  // Route must have been calculated
+  if (!document.getElementById('totalMiles').value) {
+    const routeErr = document.getElementById('routeError');
+    routeErr.textContent = 'Please click "Get Driving Distance & Map" before submitting.';
+    routeErr.classList.add('show');
+    ok = false;
   }
-  function hideOverlays() {
-    document.querySelectorAll('.overlay').forEach(o => o.classList.remove('visible'));
+
+  return ok;
+}
+
+form.querySelectorAll('input:not([type="hidden"]):not([type="radio"]), textarea').forEach(el => {
+  el.addEventListener('input', () => showErr(el.id, false));
+});
+document.querySelectorAll('input[name="program"]').forEach(r => {
+  r.addEventListener('change', () => document.getElementById('err-program').classList.remove('show'));
+});
+
+// ── Submit ──
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!validate()) return;
+
+  const program = document.querySelector('input[name="program"]:checked').value;
+  const flowUrl = FLOW_URLS[program];
+
+  if (!flowUrl || flowUrl.startsWith('PASTE_')) {
+    document.getElementById('errorMsg').textContent =
+      'Flow URL not configured for ' + program + '. Please contact your administrator.';
+    showOverlay('errorOverlay');
+    return;
   }
-  function resetForm() {
-    hideOverlays();
-    form.reset();
-    document.getElementById('tripDate').valueAsDate = new Date();
-    milesF.value = '';
-    reimbB.style.display = 'none';
+
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  const miles = parseFloat(document.getElementById('totalMiles').value) || 0;
+
+  const payload = {
+    program:                program,
+    tripDate:               document.getElementById('tripDate').value,
+    staffName:              document.getElementById('staffName').value.trim(),
+    startingAddress:        document.getElementById('startAddress').value.trim(),
+    destinationAddress:     document.getElementById('destAddress').value.trim(),
+    totalMiles:             miles,
+    drivingDuration:        document.getElementById('drivingDuration').value,
+    estimatedReimbursement: (miles * RATE_PER_MILE).toFixed(2),
+    purposeOfTrip:          document.getElementById('tripPurpose').value.trim(),
+    submittedAt:            new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }),
+  };
+
+  try {
+    await new Promise((resolve) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', flowUrl, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.onreadystatechange = () => { if (xhr.readyState === 4) resolve(); };
+      xhr.onerror = () => resolve();
+      setTimeout(resolve, 6000);
+      xhr.send(JSON.stringify(payload));
+    });
+    document.getElementById('successMsg').textContent =
+      'Your ' + miles + '-mile trip for ' + program + ' has been recorded. Estimated reimbursement: $' +
+      (miles * RATE_PER_MILE).toFixed(2) + '.';
+    showOverlay('successOverlay');
+  } catch (err) {
+    document.getElementById('errorMsg').textContent =
+      'Network error — please check your connection and try again.';
+    showOverlay('errorOverlay');
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
   }
+});
+
+function showOverlay(id){ document.getElementById(id).classList.add('visible') }
+function hideOverlays(){ document.querySelectorAll('.overlay').forEach(o => o.classList.remove('visible')) }
+function resetForm(){
+  hideOverlays();
+  form.reset();
+  document.getElementById('tripDate').valueAsDate = new Date();
+  document.getElementById('totalMiles').value = '';
+  document.getElementById('drivingDuration').value = '';
+  document.getElementById('milesResult').style.display = 'none';
+  document.getElementById('reimbBox').classList.remove('show');
+  document.getElementById('mapWrap').style.display = 'none';
+  document.getElementById('routeError').classList.remove('show');
+  if (routeLayer && map) { map.removeLayer(routeLayer); routeLayer = null; }
+}
 </script>
 </body>
 </html>
