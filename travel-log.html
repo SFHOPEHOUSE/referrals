@@ -413,10 +413,7 @@
 
 <script>
 // ── CONFIG ──────────────────────────────────────────────────
-const FLOW_URLS = {
-  'Hope House':  'PASTE_HOPE_HOUSE_FLOW_URL_HERE',
-  'Wells Place': 'PASTE_WELLS_PLACE_FLOW_URL_HERE',
-};
+const FLOW_URL = 'PASTE_FLOW_URL_HERE';
 // ────────────────────────────────────────────────────────────
 
 const form = document.getElementById('travelForm');
@@ -804,10 +801,16 @@ form.addEventListener('submit', async (e) => {
   const submittedAt = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
   const allReceipts = receiptImages.filter(Boolean).map(r => ({ name: r.name, amount: r.amount, data: r.base64 }));
 
+  if (!FLOW_URL || FLOW_URL.startsWith('PASTE_')) {
+    document.getElementById('errorMsg').textContent = 'Flow URL not configured. Please contact your administrator.';
+    showOverlay('errorOverlay');
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    return;
+  }
+
   // Send one POST per trip → one row per trip in Excel
   const sends = tripList.map((trip, i) => {
-    const flowUrl = FLOW_URLS[trip.program];
-    if (!flowUrl || flowUrl.startsWith('PASTE_')) return Promise.resolve();
 
     const payload = {
       // Staff & date (repeated on every row for easy filtering in Excel)
@@ -837,7 +840,7 @@ form.addEventListener('submit', async (e) => {
 
     return new Promise(resolve => {
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', flowUrl, true);
+      xhr.open('POST', FLOW_URL, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.onreadystatechange = () => { if (xhr.readyState === 4) resolve(); };
       xhr.onerror = () => resolve();
