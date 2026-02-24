@@ -158,6 +158,10 @@
   .row{display:flex;gap:1rem}
   .row .field{flex:1}
 
+  /* ── Date row — stays side by side on mobile ── */
+  .date-row{display:flex;gap:.75rem}
+  .date-row .field{flex:1;min-width:0}
+
   /* ── Community invite ── */
   .community-invite{
     display:flex;
@@ -297,19 +301,38 @@
 
   /* ── Responsive ── */
   @media(max-width:600px){
-    .logo-bar{padding:.75rem .5rem}
-    .logo-bar img{max-width:260px}
+    .logo-bar{padding:1rem .75rem}
+    .logo-bar img{max-width:380px;width:88%;display:block;margin:0 auto}
     .card{margin:.5rem .5rem 1rem;padding:1.25rem 1rem 1.75rem}
     .card h2{margin:-1.25rem -1rem 1.25rem;padding:.9rem 1rem;font-size:.95rem}
+
+    /* Partner name/phone stack vertically */
     .row{flex-direction:column;gap:0}
-    input{font-size:1rem;padding:.75rem .85rem}
+
+    /* Date fields stay side by side, compact */
+    .date-row{gap:.5rem}
+    .date-row .field{flex:1;min-width:0}
+    .date-row input{
+      padding:.45rem .5rem;font-size:.82rem;
+      -webkit-appearance:none;appearance:none;
+    }
+    .date-row label{font-size:.78rem}
+
+    /* All other inputs */
+    input{font-size:1rem;padding:.6rem .75rem}
+    label{font-size:.83rem}
+
     .btn{padding:1rem;font-size:1rem}
     .footer{font-size:.72rem;padding:1rem .75rem}
+    .community-invite{padding:.75rem .85rem}
+    .invite-title{font-size:.8rem}
+    .invite-text{font-size:.75rem}
   }
 
   @media(max-width:380px){
-    .logo-bar img{max-width:220px}
+    .logo-bar img{max-width:300px;width:85%}
     .card{margin:.25rem .25rem .75rem;padding:1rem .85rem 1.5rem}
+    .date-row input{font-size:.78rem;padding:.4rem .45rem}
   }
 </style>
 </head>
@@ -325,16 +348,16 @@
   <h2>Hope House Referral Form</h2>
 
   <form id="referralForm" novalidate>
-    <div class="row">
+    <div class="date-row">
       <div class="field">
         <label for="referralDate">Referral Date <span class="req">*</span></label>
         <input type="date" id="referralDate" name="referralDate" required readonly>
         <div class="error-msg" id="err-referralDate">Please select a referral date.</div>
       </div>
       <div class="field">
-        <label for="clientDob">Participant Date of Birth <span class="req">*</span></label>
+        <label for="clientDob">Date of Birth <span class="req">*</span></label>
         <input type="date" id="clientDob" name="clientDob" required>
-        <div class="error-msg" id="err-clientDob">Please enter the client's date of birth.</div>
+        <div class="error-msg" id="err-clientDob">Please enter date of birth.</div>
       </div>
     </div>
 
